@@ -9,9 +9,13 @@ const { DatabaseSync } = require("node:sqlite");
 const path = require("path");
 const bcrypt = require("bcryptjs");
 
-// El archivo blog.db se creará automáticamente dentro de la carpeta /database
-// la primera vez que se ejecute el servidor.
-const db = new DatabaseSync(path.join(__dirname, "blog.db"));
+// El archivo blog.db se guarda, por defecto, dentro de esta misma carpeta
+// (así funciona igual que hasta ahora en tu ordenador). En producción
+// (Railway), la variable de entorno DB_PATH apunta a una carpeta separada
+// del código, montada como volumen persistente — así el volumen nunca
+// "tapa" archivos de código como este mismo db.js.
+const rutaBD = process.env.DB_PATH || path.join(__dirname, "blog.db");
+const db = new DatabaseSync(rutaBD);
 
 // ---------------------------------------------------------------------
 // Creación de tablas (solo se ejecuta si no existen ya, gracias a "IF NOT EXISTS")
