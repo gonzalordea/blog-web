@@ -13,6 +13,19 @@
 <body>
   <header class="cabecera">
     <a href="/" class="logo">blog<span class="logo-punto">.</span>dev</a>
+    <form action="/" method="GET" class="barra-busqueda" role="search">
+      <svg class="icono-busqueda" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+      </svg>
+      <input
+        type="search"
+        name="q"
+        placeholder="Buscar artículos..."
+        value="<%= typeof busqueda !== 'undefined' ? busqueda : '' %>"
+        aria-label="Buscar artículos"
+      />
+    </form>
     <nav>
       <% if (typeof sesionIniciada !== "undefined" && sesionIniciada) { %>
         <a href="/admin/dashboard">Panel admin</a>

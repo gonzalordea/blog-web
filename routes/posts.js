@@ -10,6 +10,7 @@ const db = require("../database/db");
 // Admite un filtro opcional por categoría: /?categoria=2
 router.get("/", (req, res) => {
   const categoriaId = req.query.categoria;
+  const busqueda = (req.query.q || "").trim();
 
   // "LEFT JOIN" trae el nombre de la categoría junto a cada post en la misma
   // consulta, en vez de tener que hacer una consulta aparte por cada post.
@@ -18,11 +19,22 @@ router.get("/", (req, res) => {
     FROM posts
     LEFT JOIN categorias ON posts.categoria_id = categorias.id
   `;
+  const condiciones = [];
   const parametros = [];
 
   if (categoriaId) {
-    sql += " WHERE posts.categoria_id = ?";
+    condiciones.push("posts.categoria_id = ?");
     parametros.push(categoriaId);
+  }
+
+  if (busqueda) {
+    condiciones.push("(posts.titulo LIKE ? OR posts.resumen LIKE ? OR posts.contenido LIKE ?)");
+    const comodin = `%${busqueda}%`;
+    parametros.push(comodin, comodin, comodin);
+  }
+
+  if (condiciones.length > 0) {
+    sql += " WHERE " + condiciones.join(" AND ");
   }
 
   sql += " ORDER BY posts.fecha_creacion DESC";
@@ -30,7 +42,12 @@ router.get("/", (req, res) => {
   const posts = db.prepare(sql).all(...parametros);
   const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
 
-  res.render("index", { posts, categorias, categoriaSeleccionada: categoriaId ? Number(categoriaId) : null });
+  res.render("index", {
+    posts,
+    categorias,
+    categoriaSeleccionada: categoriaId ? Number(categoriaId) : null,
+    busqueda,
+  });
 });
 
 // GET /post/:id -> Página de detalle de un artículo concreto

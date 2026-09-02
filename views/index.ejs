@@ -16,9 +16,22 @@
   </nav>
 <% } %>
 
+<% if (typeof busqueda !== "undefined" && busqueda) { %>
+  <p class="resultado-busqueda">
+    <%= posts.length %> resultado<%= posts.length === 1 ? '' : 's' %> para "<strong><%= busqueda %></strong>"
+    <a href="/" class="limpiar-busqueda">Borrar búsqueda</a>
+  </p>
+<% } %>
+
 <section class="lista-posts">
   <% if (posts.length === 0) { %>
-    <p class="vacio">Todavía no hay artículos publicados. Vuelve pronto.</p>
+    <p class="vacio">
+      <% if (typeof busqueda !== "undefined" && busqueda) { %>
+        No se encontraron artículos que coincidan con tu búsqueda.
+      <% } else { %>
+        Todavía no hay artículos publicados. Vuelve pronto.
+      <% } %>
+    </p>
   <% } %>
 
   <% posts.forEach(function(post) { %>
