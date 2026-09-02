@@ -1,4 +1,13 @@
-<%- include('partials/header') %>
+<%
+  const tituloIndex = (typeof busqueda !== "undefined" && busqueda)
+    ? `Resultados para "${busqueda}" — Blog Dev`
+    : "Blog Dev — Notas y recursos de desarrollo web";
+%>
+<%- include('partials/header', {
+  metaTitulo: tituloIndex,
+  metaDescripcion: "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web: guías prácticas, opiniones y recomendaciones.",
+  metaCanonica: "/"
+}) %>
 
 <section class="hero">
   <p class="hero-etiqueta">Notas y recursos de desarrollo web</p>

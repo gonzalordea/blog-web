@@ -11,9 +11,15 @@ require("./database/db");
 
 const postsRoutes = require("./routes/posts");
 const adminRoutes = require("./routes/admin");
+const seoRoutes = require("./routes/seo");
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
+
+// Railway (y la mayoría de plataformas) ponen la app detrás de un proxy que
+// termina el HTTPS y reenvía la petición por HTTP. Sin esto, req.protocol
+// devolvería siempre "http", y las URLs canónicas/Open Graph saldrían mal.
+app.set("trust proxy", 1);
 
 // ---------------------------------------------------------------------
 // Configuración del motor de plantillas (EJS)
@@ -47,9 +53,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Igual que arriba: la URL base (protocolo + dominio) para construir URLs
+// absolutas (canonical, Open Graph, sitemap) sin tener que hardcodear el
+// dominio en ningún sitio — así funciona igual en local, en el dominio que
+// da Railway, o en un dominio propio si se añade más adelante.
+app.use((req, res, next) => {
+  res.locals.urlBase = `${req.protocol}://${req.get("host")}`;
+  next();
+});
+
 // ---------------------------------------------------------------------
 // Rutas
 // ---------------------------------------------------------------------
+app.use("/", seoRoutes);
 app.use("/", postsRoutes);
 app.use("/admin", adminRoutes);
 

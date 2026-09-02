@@ -1,4 +1,29 @@
-<%- include('partials/header') %>
+<%
+  const resumenLimpio = post.resumen.replace(/\s+/g, " ").trim();
+  const fechaIso = post.fecha_creacion.replace(" ", "T");
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.titulo,
+    description: resumenLimpio,
+    datePublished: fechaIso,
+    mainEntityOfPage: urlBase + "/post/" + post.id,
+    author: { "@type": "Organization", name: "Blog Dev" },
+    publisher: { "@type": "Organization", name: "Blog Dev" },
+  };
+  if (post.imagen) {
+    jsonLd.image = post.imagen.startsWith("http") ? post.imagen : urlBase + post.imagen;
+  }
+%>
+<%- include('partials/header', {
+  metaTitulo: post.titulo + " — Blog Dev",
+  metaDescripcion: resumenLimpio,
+  metaCanonica: "/post/" + post.id,
+  metaImagen: post.imagen,
+  metaTipoOg: "article"
+}) %>
+
+<script type="application/ld+json"><%- JSON.stringify(jsonLd) %></script>
 
 <article class="post-detalle">
   <a href="/" class="volver">&larr; Volver al inicio</a>

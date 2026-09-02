@@ -1,4 +1,4 @@
-<%- include('../partials/header') %>
+<%- include('../partials/header', { metaTitulo: (post ? "Editar artículo" : "Nuevo artículo") + " — Blog Dev", metaNoIndex: true }) %>
 
 <section class="form-caja">
   <h1><%= post ? "Editar artículo" : "Nuevo artículo" %></h1>

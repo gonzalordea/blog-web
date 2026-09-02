@@ -1,10 +1,39 @@
 <!-- views/partials/header.ejs -->
+<%
+  // Cada vista puede pasar sus propios metaTitulo/metaDescripcion/etc. al
+  // incluir este partial. Si no los pasa, se usan estos valores por defecto
+  // (los de la portada).
+  const _titulo = typeof metaTitulo !== "undefined" ? metaTitulo : "Blog Dev — Notas y recursos de desarrollo web";
+  const _descripcion = typeof metaDescripcion !== "undefined" ? metaDescripcion : "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web.";
+  const _canonica = urlBase + (typeof metaCanonica !== "undefined" ? metaCanonica : "/");
+  const _tipoOg = typeof metaTipoOg !== "undefined" ? metaTipoOg : "website";
+  const _imagen = typeof metaImagen !== "undefined" && metaImagen
+    ? (metaImagen.startsWith("http") ? metaImagen : urlBase + metaImagen)
+    : null;
+  const _noIndex = typeof metaNoIndex !== "undefined" && metaNoIndex;
+%>
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blog Dev</title>
+  <title><%= _titulo %></title>
+  <meta name="description" content="<%= _descripcion %>" />
+  <link rel="canonical" href="<%= _canonica %>" />
+  <% if (_noIndex) { %>
+    <meta name="robots" content="noindex, nofollow" />
+  <% } %>
+
+  <meta property="og:type" content="<%= _tipoOg %>" />
+  <meta property="og:title" content="<%= _titulo %>" />
+  <meta property="og:description" content="<%= _descripcion %>" />
+  <meta property="og:url" content="<%= _canonica %>" />
+  <meta property="og:site_name" content="Blog Dev" />
+  <% if (_imagen) { %>
+    <meta property="og:image" content="<%= _imagen %>" />
+  <% } %>
+  <meta name="twitter:card" content="<%= _imagen ? 'summary_large_image' : 'summary' %>" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
