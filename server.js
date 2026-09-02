@@ -30,7 +30,10 @@ app.use(express.static(path.join(__dirname, "public"))); // Archivos CSS/JS/imá
 
 app.use(
   session({
-    secret: "cambia-esto-por-una-frase-secreta-larga", // En un proyecto real, esto va en variables de entorno
+    // En producción, define SESSION_SECRET como variable de entorno con una
+    // frase larga y aleatoria. Si no existe (como en desarrollo local), se
+    // usa un valor por defecto — está bien para probar, pero nunca para producción real.
+    secret: process.env.SESSION_SECRET || "cambia-esto-por-una-frase-secreta-larga",
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 1000 * 60 * 60 * 2 }, // 2 horas de sesión

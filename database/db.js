@@ -77,21 +77,35 @@ if (totalCategorias === 0) {
 }
 
 // ---------------------------------------------------------------------
-// Usuario administrador por defecto
+// Usuario administrador
 // ---------------------------------------------------------------------
-// La primera vez que arranca el proyecto, si no hay ningún usuario admin,
-// se crea uno automáticamente con estas credenciales de ejemplo.
-// IMPORTANTE: cámbialas luego desde la base de datos o el código.
+// El email y la contraseña se leen de variables de entorno (ADMIN_EMAIL /
+// ADMIN_PASSWORD). Si no las defines, se usan unas de prueba por defecto
+// (solo pensadas para desarrollo local, nunca para producción).
+//
+// En cada arranque del servidor, si el usuario admin no existe se crea,
+// y si ya existe se actualiza su contraseña para que coincida con la
+// variable de entorno actual. Así, cambiar ADMIN_PASSWORD en Railway y
+// volver a desplegar es suficiente para cambiar la contraseña, incluso
+// si el usuario ya se había creado antes con la de prueba.
 
-const admin = db.prepare("SELECT * FROM usuarios WHERE email = ?").get("admin@blog.com");
+const adminEmail = process.env.ADMIN_EMAIL || "admin@blog.com";
+const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
+const passwordHasheada = bcrypt.hashSync(adminPassword, 10);
+
+const admin = db.prepare("SELECT * FROM usuarios WHERE email = ?").get(adminEmail);
 
 if (!admin) {
-  const passwordHasheada = bcrypt.hashSync("admin123", 10);
   db.prepare("INSERT INTO usuarios (email, password) VALUES (?, ?)").run(
-    "admin@blog.com",
+    adminEmail,
     passwordHasheada
   );
-  console.log("Usuario admin creado -> email: admin@blog.com | contraseña: admin123");
+  console.log(`Usuario admin creado -> email: ${adminEmail}`);
+} else {
+  db.prepare("UPDATE usuarios SET password = ? WHERE email = ?").run(
+    passwordHasheada,
+    adminEmail
+  );
 }
 
 module.exports = db;

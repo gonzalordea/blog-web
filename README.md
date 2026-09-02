@@ -55,7 +55,20 @@ La primera vez que arranca, se crea automáticamente:
 - Desde el panel puedes **crear, editar y borrar** artículos.
 - El campo "Contenido" admite HTML básico (`<p>`, `<h2>`, `<strong>`, `<a>`, etc.) para poder dar formato al artículo.
 
-## 4. Ideas para seguir aprendiendo y ampliar el proyecto
+## 4. Variables de entorno (importante en producción)
+
+El proyecto funciona sin configurar nada en local (usa valores por defecto). Pero si lo despliegas online (Railway, Render...), define estas variables de entorno:
+
+| Variable | Para qué sirve | Valor por defecto si no la defines |
+|---|---|---|
+| `DB_PATH` | Ruta del archivo de base de datos SQLite (en Railway, apúntala dentro de tu volumen persistente) | `database/blog.db` |
+| `ADMIN_EMAIL` | Email del usuario administrador | `admin@blog.com` |
+| `ADMIN_PASSWORD` | Contraseña del usuario administrador | `admin123` |
+| `SESSION_SECRET` | Frase secreta para firmar las cookies de sesión (pon algo largo y aleatorio) | una frase de ejemplo, no segura |
+
+> Cambiar `ADMIN_EMAIL` / `ADMIN_PASSWORD` y volver a desplegar actualiza las credenciales del admin automáticamente, aunque ese usuario ya existiera de antes.
+
+## 5. Ideas para seguir aprendiendo y ampliar el proyecto
 
 Estas son buenas siguientes prácticas, de menor a mayor dificultad:
 
@@ -66,7 +79,7 @@ Estas son buenas siguientes prácticas, de menor a mayor dificultad:
 5. Añadir comentarios de los lectores (esto ya seria una tabla nueva relacionada con `posts`).
 6. Preparar el proyecto para publicarlo online (por ejemplo con Render o Railway, que tienen planes gratuitos) y empezar a meter Google AdSense o enlaces de afiliado en los artículos.
 
-## 5. Sobre la monetización
+## 6. Sobre la monetización
 
 Con este blog ya funcionando, los pasos típicos para empezar a generar ingresos son:
 - Publicar contenido de forma constante (esto es lo que más pesa a la hora de conseguir tráfico).
