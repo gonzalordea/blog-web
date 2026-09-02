@@ -1,0 +1,44 @@
+<%- include('../partials/header') %>
+
+<section class="dashboard">
+  <div class="dashboard-cabecera">
+    <h1>Categorías</h1>
+    <a href="/admin/dashboard" class="boton boton-secundario">&larr; Volver al panel</a>
+  </div>
+
+  <% if (error) { %>
+    <p class="mensaje-error"><%= error %></p>
+  <% } %>
+
+  <form action="/admin/categorias" method="POST" class="formulario formulario-inline">
+    <input type="text" name="nombre" placeholder="Nombre de la nueva categoría" required />
+    <button type="submit">Añadir</button>
+  </form>
+
+  <% if (categorias.length === 0) { %>
+    <p class="vacio">Todavía no hay categorías.</p>
+  <% } %>
+
+  <table class="tabla-admin">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% categorias.forEach(function(categoria) { %>
+        <tr>
+          <td><%= categoria.nombre %></td>
+          <td class="acciones">
+            <form action="/admin/categorias/<%= categoria.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Borrar esta categoría? Los artículos que la tengan asignada se quedarán sin categoría.');">
+              <button type="submit">Borrar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('../partials/footer') %>

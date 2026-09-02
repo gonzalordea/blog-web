@@ -1,0 +1,23 @@
+<%- include('../partials/header') %>
+
+<section class="form-caja">
+  <h1>Acceso administrador</h1>
+
+  <% if (error) { %>
+    <p class="mensaje-error"><%= error %></p>
+  <% } %>
+
+  <form action="/admin/login" method="POST" class="formulario">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" required />
+
+    <label for="password">Contraseña</label>
+    <input type="password" id="password" name="password" required />
+
+    <button type="submit">Entrar</button>
+  </form>
+
+  <p class="ayuda">Credenciales por defecto: admin@blog.com / admin123</p>
+</section>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,21 @@
+<%- include('partials/header') %>
+
+<article class="post-detalle">
+  <a href="/" class="volver">&larr; Volver al inicio</a>
+
+  <% if (post.categoria_nombre) { %>
+    <p class="fila-post-meta"><%= post.categoria_nombre %></p>
+  <% } %>
+  <h1><%= post.titulo %></h1>
+  <p class="fecha">Publicado el <%= post.fecha_creacion %></p>
+
+  <% if (post.imagen) { %>
+    <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="post-detalle-img" />
+  <% } %>
+
+  <div class="post-detalle-contenido">
+    <%- post.contenido %>
+  </div>
+</article>
+
+<%- include('partials/footer') %>

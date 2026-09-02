@@ -1,0 +1,27 @@
+<!-- views/partials/header.ejs -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog Dev</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+</head>
+<body>
+  <header class="cabecera">
+    <a href="/" class="logo">blog<span class="logo-punto">.</span>dev</a>
+    <nav>
+      <% if (typeof sesionIniciada !== "undefined" && sesionIniciada) { %>
+        <a href="/admin/dashboard">Panel admin</a>
+        <form action="/admin/logout" method="POST" class="form-logout">
+          <button type="submit">Cerrar sesión</button>
+        </form>
+      <% } else { %>
+        <a href="/admin/login">Acceso admin</a>
+      <% } %>
+    </nav>
+  </header>
+  <main class="contenedor">

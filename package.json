@@ -1,0 +1,19 @@
+{
+  "name": "blog-web",
+  "version": "1.0.0",
+  "description": "Blog de recursos para estudiantes de desarrollo web, con backend en Express y base de datos SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "ejs": "^3.1.10",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}

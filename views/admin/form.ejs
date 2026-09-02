@@ -1,0 +1,33 @@
+<%- include('../partials/header') %>
+
+<section class="form-caja">
+  <h1><%= post ? "Editar artículo" : "Nuevo artículo" %></h1>
+
+  <form action="<%= post ? '/admin/posts/' + post.id + '/editar' : '/admin/posts/nuevo' %>" method="POST" class="formulario">
+    <label for="titulo">Título</label>
+    <input type="text" id="titulo" name="titulo" required value="<%= post ? post.titulo : '' %>" />
+
+    <label for="resumen">Resumen (aparece en la portada)</label>
+    <textarea id="resumen" name="resumen" rows="2" required><%= post ? post.resumen : '' %></textarea>
+
+    <label for="categoria_id">Categoría</label>
+    <select id="categoria_id" name="categoria_id">
+      <option value="">Sin categoría</option>
+      <% categorias.forEach(function(categoria) { %>
+        <option value="<%= categoria.id %>" <%= post && post.categoria_id === categoria.id ? 'selected' : '' %>>
+          <%= categoria.nombre %>
+        </option>
+      <% }); %>
+    </select>
+
+    <label for="imagen">URL de imagen (opcional)</label>
+    <input type="text" id="imagen" name="imagen" value="<%= post && post.imagen ? post.imagen : '' %>" />
+
+    <label for="contenido">Contenido (admite HTML básico: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;...)</label>
+    <textarea id="contenido" name="contenido" rows="12" required><%= post ? post.contenido : '' %></textarea>
+
+    <button type="submit"><%= post ? "Guardar cambios" : "Publicar artículo" %></button>
+  </form>
+</section>
+
+<%- include('../partials/footer') %>

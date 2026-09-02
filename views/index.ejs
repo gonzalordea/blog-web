@@ -1,0 +1,43 @@
+<%- include('partials/header') %>
+
+<section class="hero">
+  <p class="hero-etiqueta">Notas y recursos de desarrollo web</p>
+  <h1>Aprendiendo a construir cosas, un artículo a la vez.</h1>
+</section>
+
+<% if (categorias.length > 0) { %>
+  <nav class="tabs-categorias">
+    <a href="/" class="<%= !categoriaSeleccionada ? 'tab-activa' : '' %>">Todo</a>
+    <% categorias.forEach(function(categoria) { %>
+      <a href="/?categoria=<%= categoria.id %>" class="<%= categoriaSeleccionada === categoria.id ? 'tab-activa' : '' %>">
+        <%= categoria.nombre %>
+      </a>
+    <% }); %>
+  </nav>
+<% } %>
+
+<section class="lista-posts">
+  <% if (posts.length === 0) { %>
+    <p class="vacio">Todavía no hay artículos publicados. Vuelve pronto.</p>
+  <% } %>
+
+  <% posts.forEach(function(post) { %>
+    <article class="fila-post">
+      <% if (post.imagen) { %>
+        <a href="/post/<%= post.id %>" class="fila-post-img-envoltorio">
+          <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="fila-post-img" />
+        </a>
+      <% } %>
+      <div class="fila-post-contenido">
+        <p class="fila-post-meta">
+          <% if (post.categoria_nombre) { %><%= post.categoria_nombre %><% } else { %>Sin categoría<% } %>
+        </p>
+        <h2><a href="/post/<%= post.id %>"><%= post.titulo %></a></h2>
+        <p class="fila-post-resumen"><%= post.resumen %></p>
+        <a href="/post/<%= post.id %>" class="leer-mas">Leer artículo</a>
+      </div>
+    </article>
+  <% }); %>
+</section>
+
+<%- include('partials/footer') %>

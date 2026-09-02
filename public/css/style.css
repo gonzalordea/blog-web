@@ -1,0 +1,448 @@
+/* public/css/style.css
+   Identidad visual: "cuaderno de apuntes de desarrollo" — editorial, legible,
+   con acentos de color puntuales en vez de tarjetas genéricas con sombra. */
+
+:root {
+  --bg: #eef1f6;
+  --bg-elevada: #ffffff;
+  --tinta: #1b2430;
+  --tinta-tenue: #5b6472;
+  --borde: #d8deea;
+  --acento: #2f5de3;
+  --acento-calido: #d98324;
+  --fuente-titular: "Fraunces", Georgia, serif;
+  --fuente-cuerpo: "IBM Plex Sans", system-ui, sans-serif;
+  --fuente-mono: "IBM Plex Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--fuente-cuerpo);
+  color: var(--tinta);
+  background: var(--bg);
+  line-height: 1.6;
+}
+
+.contenedor {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+  min-height: 70vh;
+}
+
+/* Cabecera */
+.cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.1rem 2rem;
+  background: var(--bg-elevada);
+  border-bottom: 1px solid var(--borde);
+}
+
+.logo {
+  font-family: var(--fuente-mono);
+  font-size: 1.15rem;
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--tinta);
+  letter-spacing: -0.02em;
+}
+
+.logo-punto {
+  color: var(--acento);
+}
+
+.cabecera nav a {
+  margin-left: 1.3rem;
+  text-decoration: none;
+  color: var(--tinta-tenue);
+  font-size: 0.95rem;
+  border-bottom: 1px solid transparent;
+}
+
+.cabecera nav a:hover {
+  color: var(--tinta);
+  border-bottom-color: var(--acento);
+}
+
+.form-logout {
+  display: inline;
+}
+
+.form-logout button {
+  background: none;
+  border: none;
+  color: var(--tinta-tenue);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.95rem;
+  margin-left: 1.3rem;
+  padding: 0;
+}
+
+.form-logout button:hover {
+  color: var(--tinta);
+}
+
+/* Hero */
+.hero {
+  margin-bottom: 2.2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.hero-etiqueta {
+  font-family: var(--fuente-mono);
+  font-size: 0.85rem;
+  color: var(--acento);
+  margin: 0 0 0.7rem;
+}
+
+.hero h1 {
+  font-family: var(--fuente-titular);
+  font-weight: 500;
+  font-style: italic;
+  font-size: 2rem;
+  line-height: 1.3;
+  margin: 0;
+  max-width: 22ch;
+}
+
+/* Tabs de categorías */
+.tabs-categorias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+  margin-bottom: 2.2rem;
+  border-bottom: 1px solid var(--borde);
+  padding-bottom: 0.9rem;
+}
+
+.tabs-categorias a {
+  text-decoration: none;
+  color: var(--tinta-tenue);
+  font-size: 0.95rem;
+  padding-bottom: 0.9rem;
+  margin-bottom: -1rem;
+  border-bottom: 2px solid transparent;
+}
+
+.tabs-categorias a:hover {
+  color: var(--tinta);
+}
+
+.tabs-categorias a.tab-activa {
+  color: var(--tinta);
+  border-bottom-color: var(--acento);
+  font-weight: 500;
+}
+
+/* Listado de posts: filas editoriales, no tarjetas */
+.fila-post {
+  display: flex;
+  gap: 1.3rem;
+  padding: 1.8rem 0;
+  border-bottom: 1px solid var(--borde);
+}
+
+.fila-post:first-child {
+  padding-top: 0;
+}
+
+.fila-post-img-envoltorio {
+  flex-shrink: 0;
+}
+
+.fila-post-img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.fila-post-meta {
+  font-family: var(--fuente-mono);
+  font-size: 0.78rem;
+  color: var(--acento-calido);
+  margin: 0 0 0.4rem;
+}
+
+.fila-post-contenido h2 {
+  margin: 0 0 0.4rem;
+  font-family: var(--fuente-titular);
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.fila-post-contenido h2 a {
+  text-decoration: none;
+  color: var(--tinta);
+}
+
+.fila-post-contenido h2 a:hover {
+  color: var(--acento);
+}
+
+.fila-post-resumen {
+  color: var(--tinta-tenue);
+  margin: 0 0 0.6rem;
+  font-size: 0.96rem;
+}
+
+.leer-mas {
+  color: var(--acento);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 0.92rem;
+  border-bottom: 1px solid transparent;
+}
+
+.leer-mas:hover {
+  border-bottom-color: var(--acento);
+}
+
+.vacio {
+  color: var(--tinta-tenue);
+  padding: 2rem 0;
+}
+
+/* Detalle de post */
+.volver {
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  color: var(--tinta-tenue);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.volver:hover {
+  color: var(--acento);
+}
+
+.post-detalle h1 {
+  font-family: var(--fuente-titular);
+  font-size: 2.1rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0.3rem 0 0.5rem;
+}
+
+.fecha {
+  color: var(--tinta-tenue);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.post-detalle-img {
+  width: 100%;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.post-detalle-contenido {
+  font-size: 1.05rem;
+}
+
+.post-detalle-contenido h2 {
+  font-family: var(--fuente-titular);
+  font-size: 1.4rem;
+  margin-top: 2rem;
+}
+
+.post-detalle-contenido p {
+  margin-bottom: 1.1rem;
+}
+
+/* Formularios (login, crear/editar post, categorías) */
+.form-caja {
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--bg-elevada);
+  padding: 2rem;
+  border-radius: 6px;
+  border: 1px solid var(--borde);
+}
+
+.form-caja h1 {
+  font-family: var(--fuente-titular);
+  font-size: 1.5rem;
+  margin-top: 0;
+}
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+}
+
+.formulario label {
+  margin-top: 1.1rem;
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--tinta-tenue);
+}
+
+.formulario input,
+.formulario textarea,
+.formulario select {
+  padding: 0.6rem;
+  margin-top: 0.35rem;
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  font: inherit;
+  background: var(--bg-elevada);
+  color: var(--tinta);
+}
+
+.formulario input:focus,
+.formulario textarea:focus,
+.formulario select:focus {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+}
+
+.formulario button,
+.boton {
+  margin-top: 1.6rem;
+  background: var(--acento);
+  color: white;
+  border: none;
+  padding: 0.65rem 1.2rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  font: inherit;
+  text-decoration: none;
+  display: inline-block;
+  text-align: center;
+}
+
+.formulario button:hover,
+.boton:hover {
+  opacity: 0.9;
+}
+
+.mensaje-error {
+  background: #fde8e8;
+  color: #b91c1c;
+  padding: 0.7rem;
+  border-radius: 4px;
+  font-size: 0.92rem;
+}
+
+.ayuda {
+  margin-top: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--tinta-tenue);
+  text-align: center;
+}
+
+/* Dashboard admin */
+.dashboard-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.6rem;
+}
+
+.dashboard-cabecera h1 {
+  font-family: var(--fuente-titular);
+  font-size: 1.6rem;
+  margin: 0;
+}
+
+.tabla-admin {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.tabla-admin th {
+  font-size: 0.82rem;
+  color: var(--tinta-tenue);
+  font-weight: 600;
+}
+
+.tabla-admin th,
+.tabla-admin td {
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--borde);
+  text-align: left;
+}
+
+.acciones a,
+.acciones button {
+  margin-right: 0.8rem;
+  color: var(--acento);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.form-borrar {
+  display: inline;
+}
+
+.form-borrar button {
+  color: #c0392b;
+}
+
+/* Botón secundario y formulario inline (categorías) */
+.boton-secundario {
+  background: var(--bg-elevada);
+  color: var(--tinta);
+  border: 1px solid var(--borde);
+  margin-right: 0.6rem;
+  margin-top: 0;
+}
+
+.formulario-inline {
+  flex-direction: row;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.formulario-inline input {
+  margin-top: 0;
+  flex: 1;
+}
+
+.formulario-inline button {
+  margin-top: 0;
+}
+
+/* Pie de página */
+.pie {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--tinta-tenue);
+  font-size: 0.85rem;
+  border-top: 1px solid var(--borde);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .fila-post {
+    flex-direction: column;
+  }
+
+  .fila-post-img {
+    width: 100%;
+    height: 180px;
+  }
+
+  .hero h1 {
+    font-size: 1.6rem;
+  }
+}

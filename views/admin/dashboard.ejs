@@ -1,0 +1,44 @@
+<%- include('../partials/header') %>
+
+<section class="dashboard">
+  <div class="dashboard-cabecera">
+    <h1>Panel de administración</h1>
+    <div>
+      <a href="/admin/categorias" class="boton boton-secundario">Categorías</a>
+      <a href="/admin/posts/nuevo" class="boton">+ Nuevo artículo</a>
+    </div>
+  </div>
+
+  <% if (posts.length === 0) { %>
+    <p class="vacio">No hay artículos todavía. Crea el primero.</p>
+  <% } %>
+
+  <table class="tabla-admin">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Categoría</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% posts.forEach(function(post) { %>
+        <tr>
+          <td><%= post.titulo %></td>
+          <td><%= post.categoria_nombre || "—" %></td>
+          <td><%= post.fecha_creacion %></td>
+          <td class="acciones">
+            <a href="/post/<%= post.id %>" target="_blank">Ver</a>
+            <a href="/admin/posts/<%= post.id %>/editar">Editar</a>
+            <form action="/admin/posts/<%= post.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Seguro que quieres borrar este artículo?');">
+              <button type="submit">Borrar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('../partials/footer') %>
