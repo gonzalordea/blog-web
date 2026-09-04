@@ -5,6 +5,9 @@
 const express = require("express");
 const router = express.Router();
 const bcrypt = require("bcryptjs");
+const multer = require("multer");
+const fs = require("fs");
+const path = require("path");
 const db = require("../database/db");
 
 // ---------------------------------------------------------------------
@@ -15,6 +18,69 @@ function requiereLogin(req, res, next) {
     return res.redirect("/admin/login");
   }
   next();
+}
+
+// ---------------------------------------------------------------------
+// Subida de imágenes de artículos (multer)
+// ---------------------------------------------------------------------
+// Las imágenes se guardan con un nombre único, para que no se pisen entre sí
+// dos artículos que suban un archivo con el mismo nombre (por ejemplo,
+// "portada.jpg"). La carpeta de destino la resuelve server.js (variable
+// UPLOADS_DIR en producción) y se lee de req.app en cada petición.
+const almacenamiento = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, req.app.get("carpetaUploads")),
+  filename: (req, file, cb) => {
+    const sufijoUnico = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${sufijoUnico}${path.extname(file.originalname).toLowerCase()}`);
+  },
+});
+
+const tiposPermitidos = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+
+const subirImagen = multer({
+  storage: almacenamiento,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  fileFilter: (req, file, cb) => {
+    if (!tiposPermitidos.has(file.mimetype)) {
+      return cb(new Error("TIPO_NO_PERMITIDO"));
+    }
+    cb(null, true);
+  },
+}).single("imagen");
+
+// Envuelve el middleware de multer para poder mostrar los errores (archivo
+// demasiado grande, tipo no permitido...) en el propio formulario en vez de
+// que Express los trate como un error genérico del servidor.
+function subirImagenConError(req, res, next) {
+  subirImagen(req, res, (error) => {
+    if (!error) return next();
+
+    const mensaje =
+      error.message === "TIPO_NO_PERMITIDO"
+        ? "Solo se permiten imágenes JPG, PNG, WEBP o GIF"
+        : "La imagen no puede superar los 5 MB";
+
+    const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
+    const post = req.params.id
+      ? db.prepare("SELECT * FROM posts WHERE id = ?").get(req.params.id)
+      : null;
+
+    res.render("admin/form", { post, categorias, error: mensaje });
+  });
+}
+
+// Borra un archivo subido anteriormente (por ejemplo, al reemplazar la
+// imagen de un artículo). Es "best effort": si falla no interrumpe la
+// operación principal, solo lo avisa por consola.
+function borrarImagenAnterior(req, rutaImagen) {
+  if (!rutaImagen || !rutaImagen.startsWith("/uploads/")) return;
+
+  const rutaCompleta = path.join(req.app.get("carpetaUploads"), path.basename(rutaImagen));
+  fs.unlink(rutaCompleta, (error) => {
+    if (error && error.code !== "ENOENT") {
+      console.error("No se pudo borrar la imagen anterior:", error.message);
+    }
+  });
 }
 
 // ---------------------------------------------------------------------
@@ -66,8 +132,9 @@ router.get("/posts/nuevo", requiereLogin, (req, res) => {
   res.render("admin/form", { post: null, categorias });
 });
 
-router.post("/posts/nuevo", requiereLogin, (req, res) => {
-  const { titulo, resumen, contenido, imagen, categoria_id } = req.body;
+router.post("/posts/nuevo", requiereLogin, subirImagenConError, (req, res) => {
+  const { titulo, resumen, contenido, categoria_id } = req.body;
+  const imagen = req.file ? `/uploads/${req.file.filename}` : null;
 
   db.prepare(
     "INSERT INTO posts (titulo, resumen, contenido, imagen, categoria_id) VALUES (?, ?, ?, ?, ?)"
@@ -90,8 +157,17 @@ router.get("/posts/:id/editar", requiereLogin, (req, res) => {
   res.render("admin/form", { post, categorias });
 });
 
-router.post("/posts/:id/editar", requiereLogin, (req, res) => {
-  const { titulo, resumen, contenido, imagen, categoria_id } = req.body;
+router.post("/posts/:id/editar", requiereLogin, subirImagenConError, (req, res) => {
+  const { titulo, resumen, contenido, categoria_id } = req.body;
+  const postActual = db.prepare("SELECT imagen FROM posts WHERE id = ?").get(req.params.id);
+
+  // Si se sube un archivo nuevo, reemplaza la imagen (y borra la anterior).
+  // Si no, se conserva la que ya tenía el artículo.
+  const imagen = req.file ? `/uploads/${req.file.filename}` : postActual?.imagen || null;
+
+  if (req.file && postActual?.imagen) {
+    borrarImagenAnterior(req, postActual.imagen);
+  }
 
   db.prepare(
     "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ? WHERE id = ?"
@@ -104,7 +180,10 @@ router.post("/posts/:id/editar", requiereLogin, (req, res) => {
 // BORRAR POST
 // ---------------------------------------------------------------------
 router.post("/posts/:id/borrar", requiereLogin, (req, res) => {
+  const post = db.prepare("SELECT imagen FROM posts WHERE id = ?").get(req.params.id);
+  db.prepare("DELETE FROM comentarios WHERE post_id = ?").run(req.params.id);
   db.prepare("DELETE FROM posts WHERE id = ?").run(req.params.id);
+  if (post?.imagen) borrarImagenAnterior(req, post.imagen);
   res.redirect("/admin/dashboard");
 });
 
@@ -136,6 +215,27 @@ router.post("/categorias/:id/borrar", requiereLogin, (req, res) => {
   db.prepare("UPDATE posts SET categoria_id = NULL WHERE categoria_id = ?").run(req.params.id);
   db.prepare("DELETE FROM categorias WHERE id = ?").run(req.params.id);
   res.redirect("/admin/categorias");
+});
+
+// ---------------------------------------------------------------------
+// MODERACIÓN DE COMENTARIOS
+// ---------------------------------------------------------------------
+router.get("/comentarios", requiereLogin, (req, res) => {
+  const comentarios = db
+    .prepare(
+      `SELECT comentarios.*, posts.titulo AS post_titulo
+       FROM comentarios
+       JOIN posts ON comentarios.post_id = posts.id
+       ORDER BY comentarios.fecha_creacion DESC`
+    )
+    .all();
+
+  res.render("admin/comentarios", { comentarios });
+});
+
+router.post("/comentarios/:id/borrar", requiereLogin, (req, res) => {
+  db.prepare("DELETE FROM comentarios WHERE id = ?").run(req.params.id);
+  res.redirect("/admin/comentarios");
 });
 
 module.exports = router;

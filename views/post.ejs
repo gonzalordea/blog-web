@@ -43,4 +43,38 @@
   </div>
 </article>
 
+<section class="comentarios" id="comentarios">
+  <h2>Comentarios <% if (comentarios.length) { %>(<%= comentarios.length %>)<% } %></h2>
+
+  <% if (comentarios.length === 0) { %>
+    <p class="vacio">Todavía no hay comentarios. ¡Sé el primero en opinar!</p>
+  <% } else { %>
+    <ul class="lista-comentarios">
+      <% comentarios.forEach(function(comentario) { %>
+        <li class="comentario">
+          <div class="comentario-cabecera">
+            <span class="comentario-nombre"><%= comentario.nombre %></span>
+            <span class="comentario-fecha"><%= comentario.fecha_creacion %></span>
+          </div>
+          <p class="comentario-contenido"><%= comentario.contenido %></p>
+        </li>
+      <% }); %>
+    </ul>
+  <% } %>
+
+  <h3>Deja tu comentario</h3>
+  <% if (typeof errorComentario !== "undefined" && errorComentario) { %>
+    <p class="mensaje-error"><%= errorComentario %></p>
+  <% } %>
+  <form action="/post/<%= post.id %>/comentarios" method="POST" class="formulario formulario-comentario">
+    <label for="nombre">Nombre</label>
+    <input type="text" id="nombre" name="nombre" required maxlength="80" />
+
+    <label for="contenido-comentario">Comentario</label>
+    <textarea id="contenido-comentario" name="contenido" rows="4" required maxlength="2000"></textarea>
+
+    <button type="submit">Publicar comentario</button>
+  </form>
+</section>
+
 <%- include('partials/footer') %>

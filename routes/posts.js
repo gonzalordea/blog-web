@@ -65,7 +65,51 @@ router.get("/post/:id", (req, res) => {
     return res.status(404).send("Artículo no encontrado");
   }
 
-  res.render("post", { post });
+  const comentarios = db
+    .prepare("SELECT * FROM comentarios WHERE post_id = ? ORDER BY fecha_creacion ASC")
+    .all(post.id);
+
+  res.render("post", { post, comentarios, errorComentario: null });
+});
+
+// POST /post/:id/comentarios -> Añadir un comentario a un artículo. Público,
+// no requiere haber iniciado sesión (cualquier lector puede comentar).
+router.post("/post/:id/comentarios", (req, res) => {
+  const post = db.prepare("SELECT id FROM posts WHERE id = ?").get(req.params.id);
+  if (!post) {
+    return res.status(404).send("Artículo no encontrado");
+  }
+
+  const nombre = (req.body.nombre || "").trim().slice(0, 80);
+  const contenido = (req.body.contenido || "").trim().slice(0, 2000);
+
+  if (!nombre || !contenido) {
+    const postCompleto = db
+      .prepare(
+        `SELECT posts.*, categorias.nombre AS categoria_nombre
+         FROM posts
+         LEFT JOIN categorias ON posts.categoria_id = categorias.id
+         WHERE posts.id = ?`
+      )
+      .get(post.id);
+    const comentarios = db
+      .prepare("SELECT * FROM comentarios WHERE post_id = ? ORDER BY fecha_creacion ASC")
+      .all(post.id);
+
+    return res.status(400).render("post", {
+      post: postCompleto,
+      comentarios,
+      errorComentario: "Escribe tu nombre y un comentario antes de enviar",
+    });
+  }
+
+  db.prepare("INSERT INTO comentarios (post_id, nombre, contenido) VALUES (?, ?, ?)").run(
+    post.id,
+    nombre,
+    contenido
+  );
+
+  res.redirect(`/post/${post.id}#comentarios`);
 });
 
 module.exports = router;

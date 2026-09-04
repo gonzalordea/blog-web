@@ -3,7 +3,11 @@
 <section class="form-caja">
   <h1><%= post ? "Editar artículo" : "Nuevo artículo" %></h1>
 
-  <form action="<%= post ? '/admin/posts/' + post.id + '/editar' : '/admin/posts/nuevo' %>" method="POST" class="formulario">
+  <% if (typeof error !== "undefined" && error) { %>
+    <p class="mensaje-error"><%= error %></p>
+  <% } %>
+
+  <form action="<%= post ? '/admin/posts/' + post.id + '/editar' : '/admin/posts/nuevo' %>" method="POST" enctype="multipart/form-data" class="formulario">
     <label for="titulo">Título</label>
     <input type="text" id="titulo" name="titulo" required value="<%= post ? post.titulo : '' %>" />
 
@@ -20,8 +24,12 @@
       <% }); %>
     </select>
 
-    <label for="imagen">URL de imagen (opcional)</label>
-    <input type="text" id="imagen" name="imagen" value="<%= post && post.imagen ? post.imagen : '' %>" />
+    <label for="imagen">Imagen del artículo (opcional, JPG/PNG/WEBP/GIF, máx. 5 MB)</label>
+    <% if (post && post.imagen) { %>
+      <img src="<%= post.imagen %>" alt="Imagen actual" class="form-imagen-actual" />
+      <p class="form-imagen-nota">Sube un archivo solo si quieres reemplazar esta imagen.</p>
+    <% } %>
+    <input type="file" id="imagen" name="imagen" accept="image/jpeg,image/png,image/webp,image/gif" />
 
     <label for="contenido">Contenido (admite HTML básico: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;...)</label>
     <textarea id="contenido" name="contenido" rows="12" required><%= post ? post.contenido : '' %></textarea>

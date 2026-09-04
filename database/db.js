@@ -47,6 +47,16 @@ db.exec(`
   )
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS comentarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    post_id INTEGER NOT NULL,
+    nombre TEXT NOT NULL,
+    contenido TEXT NOT NULL,
+    fecha_creacion TEXT DEFAULT (datetime('now', 'localtime'))
+  )
+`);
+
 // ---------------------------------------------------------------------
 // Migración: añadir la columna categoria_id a "posts" si todavía no existe
 // ---------------------------------------------------------------------

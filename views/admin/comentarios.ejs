@@ -1,0 +1,41 @@
+<%- include('../partials/header', { metaTitulo: "Comentarios — Blog Dev", metaNoIndex: true }) %>
+
+<section class="dashboard">
+  <div class="dashboard-cabecera">
+    <h1>Comentarios</h1>
+    <a href="/admin/dashboard" class="boton boton-secundario">&larr; Volver al panel</a>
+  </div>
+
+  <% if (comentarios.length === 0) { %>
+    <p class="vacio">Todavía no hay comentarios de lectores.</p>
+  <% } %>
+
+  <table class="tabla-admin">
+    <thead>
+      <tr>
+        <th>Artículo</th>
+        <th>Nombre</th>
+        <th>Comentario</th>
+        <th>Fecha</th>
+        <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% comentarios.forEach(function(comentario) { %>
+        <tr>
+          <td><a href="/post/<%= comentario.post_id %>#comentarios" target="_blank"><%= comentario.post_titulo %></a></td>
+          <td><%= comentario.nombre %></td>
+          <td class="celda-comentario"><%= comentario.contenido %></td>
+          <td><%= comentario.fecha_creacion %></td>
+          <td class="acciones">
+            <form action="/admin/comentarios/<%= comentario.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Borrar este comentario?');">
+              <button type="submit">Borrar</button>
+            </form>
+          </td>
+        </tr>
+      <% }); %>
+    </tbody>
+  </table>
+</section>
+
+<%- include('../partials/footer') %>

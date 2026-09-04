@@ -2,9 +2,15 @@
 // Punto de entrada de la aplicación. Aquí se configura Express,
 // las vistas (EJS), las sesiones y se conectan las rutas.
 
+// Tiene que ser lo primero que se ejecuta: carga las variables definidas en
+// el archivo ".env" (si existe) dentro de process.env, antes de que
+// database/db.js o el resto del archivo las lean.
+require("dotenv").config();
+
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
+const fs = require("fs");
 
 // Al importar db.js, se ejecuta automáticamente la creación de tablas.
 require("./database/db");
@@ -15,6 +21,17 @@ const seoRoutes = require("./routes/seo");
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
+
+// Carpeta donde se guardan las imágenes que suben los artículos. En Railway,
+// el sistema de archivos normal se borra en cada redeploy — por eso UPLOADS_DIR
+// debe apuntar dentro del mismo volumen persistente que usa DB_PATH (por
+// ejemplo, /app/data/uploads). En local, por defecto se usan sin configurar
+// nada.
+const carpetaUploads = process.env.UPLOADS_DIR
+  ? path.resolve(process.env.UPLOADS_DIR)
+  : path.join(__dirname, "public", "uploads");
+fs.mkdirSync(carpetaUploads, { recursive: true });
+app.set("carpetaUploads", carpetaUploads);
 
 // Railway (y la mayoría de plataformas) ponen la app detrás de un proxy que
 // termina el HTTPS y reenvía la petición por HTTP. Sin esto, req.protocol
@@ -32,7 +49,8 @@ app.set("views", path.join(__dirname, "views"));
 // ---------------------------------------------------------------------
 app.use(express.urlencoded({ extended: true })); // Para leer datos de formularios
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "public"))); // Archivos CSS/JS/imágenes
+app.use(express.static(path.join(__dirname, "public"))); // Archivos CSS/JS
+app.use("/uploads", express.static(carpetaUploads)); // Imágenes subidas por los artículos
 
 app.use(
   session({

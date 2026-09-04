@@ -1,3 +1,5 @@
 node_modules/
 database/blog.db
 .env
+public/uploads/*
+!public/uploads/.gitkeep
