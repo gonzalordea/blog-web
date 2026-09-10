@@ -20,10 +20,13 @@
   metaDescripcion: resumenLimpio,
   metaCanonica: "/post/" + post.id,
   metaImagen: post.imagen,
-  metaTipoOg: "article"
+  metaTipoOg: "article",
+  conBarraLateral: true
 }) %>
 
 <script type="application/ld+json"><%- JSON.stringify(jsonLd) %></script>
+
+<div class="col-principal">
 
 <article class="post-detalle">
   <a href="/" class="volver">&larr; Volver al inicio</a>
@@ -109,5 +112,36 @@
     <button type="submit">Publicar comentario</button>
   </form>
 </section>
+
+</div>
+
+<aside class="barra-lateral">
+  <div class="widget-lateral">
+    <h2>Blog Dev</h2>
+    <p>Notas y recursos sobre desarrollo web: cursos, herramientas y opiniones, pensados para quien esta aprendiendo a programar.</p>
+  </div>
+
+  <% if (categorias.length > 0) { %>
+    <div class="widget-lateral">
+      <h2>Categorias</h2>
+      <ul class="widget-lista">
+        <% categorias.forEach(function(categoria) { %>
+          <li><a href="/?categoria=<%= categoria.id %>"><%= categoria.nombre %></a></li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+
+  <% if (ultimosPosts.length > 0) { %>
+    <div class="widget-lateral">
+      <h2>Ultimos articulos</h2>
+      <ul class="widget-lista">
+        <% ultimosPosts.forEach(function(p) { %>
+          <li><a href="/post/<%= p.id %>"><%= p.titulo %></a></li>
+        <% }); %>
+      </ul>
+    </div>
+  <% } %>
+</aside>
 
 <%- include('partials/footer') %>

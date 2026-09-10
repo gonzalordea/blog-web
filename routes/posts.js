@@ -31,6 +31,22 @@ function obtenerRelacionados(categoriaId, idActual) {
     .all(categoriaId, idActual);
 }
 
+// Datos de la barra lateral (portada y detalle de articulo): las categorias
+// y los ultimos artículos publicados, sin contar el que se esta leyendo.
+function obtenerDatosBarraLateral(idActual) {
+  const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
+  const ultimosPosts = db
+    .prepare(
+      `SELECT id, titulo FROM posts
+       WHERE estado = 'publicado' AND id != ?
+       ORDER BY fecha_creacion DESC
+       LIMIT 5`
+    )
+    .all(idActual || 0);
+
+  return { categorias, ultimosPosts };
+}
+
 // GET / -> Página de inicio con todos los artículos, del más reciente al más antiguo
 // Admite un filtro opcional por categoría: /?categoria=2
 router.get("/", (req, res) => {
@@ -98,6 +114,7 @@ router.get("/post/:id", (req, res) => {
     errorComentario: null,
     tiempoLectura: calcularTiempoLectura(post.contenido),
     relacionados: obtenerRelacionados(post.categoria_id, post.id),
+    ...obtenerDatosBarraLateral(post.id),
   });
 });
 
@@ -131,6 +148,7 @@ router.post("/post/:id/comentarios", (req, res) => {
       errorComentario: "Escribe tu nombre y un comentario antes de enviar",
       tiempoLectura: calcularTiempoLectura(postCompleto.contenido),
       relacionados: obtenerRelacionados(postCompleto.categoria_id, postCompleto.id),
+      ...obtenerDatosBarraLateral(postCompleto.id),
     });
   }
 
