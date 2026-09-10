@@ -47,6 +47,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <link rel="stylesheet" href="/css/style.css" />
+
+  <% if (cfAnalyticsToken) { %>
+    <!-- Cloudflare Web Analytics: gratis, sin cookies, sin datos personales -->
+    <script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "<%= cfAnalyticsToken %>"}'></script>
+  <% } %>
 </head>
 <body>
   <header class="cabecera">

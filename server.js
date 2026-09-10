@@ -77,6 +77,10 @@ app.use((req, res, next) => {
 // da Railway, o en un dominio propio si se añade más adelante.
 app.use((req, res, next) => {
   res.locals.urlBase = `${req.protocol}://${req.get("host")}`;
+  // Token de Cloudflare Web Analytics (gratis, sin cookies). Si no esta
+  // configurada la variable de entorno, sencillamente no se muestra nada -
+  // el sitio funciona igual sin ella.
+  res.locals.cfAnalyticsToken = process.env.CF_ANALYTICS_TOKEN || null;
   next();
 });
 
