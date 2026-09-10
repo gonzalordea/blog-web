@@ -88,6 +88,22 @@ if (!tieneEstado) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir la columna visitas a "posts" si todavía no existe
+// ---------------------------------------------------------------------
+// Contador simple de visitas (se suma 1 cada vez que alguien abre el
+// articulo en la web publica). Solo se muestra en el panel de admin, nunca
+// en la web publica. Es un contador basico: cuenta cargas de la pagina, no
+// visitantes unicos ni descarta bots, asi que sirve como señal orientativa
+// de que articulos se leen mas, no como una analitica exacta.
+
+const tieneVisitas = columnasPosts.some((columna) => columna.name === "visitas");
+
+if (!tieneVisitas) {
+  db.exec("ALTER TABLE posts ADD COLUMN visitas INTEGER NOT NULL DEFAULT 0");
+  console.log("Migración aplicada: columna visitas añadida a posts");
+}
+
+// ---------------------------------------------------------------------
 // Categorías de ejemplo (solo se crean si la tabla está vacía)
 // ---------------------------------------------------------------------
 

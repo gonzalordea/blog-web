@@ -840,6 +840,11 @@ body {
   white-space: nowrap;
 }
 
+.celda-visitas {
+  font-variant-numeric: tabular-nums;
+  color: var(--tinta-tenue);
+}
+
 .form-borrar button {
   color: #c0392b;
 }

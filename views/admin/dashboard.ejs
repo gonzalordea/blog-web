@@ -20,6 +20,7 @@
         <th>Título</th>
         <th>Estado</th>
         <th>Categoría</th>
+        <th>Visitas</th>
         <th>Fecha</th>
         <th>Acciones</th>
       </tr>
@@ -34,6 +35,7 @@
             </span>
           </td>
           <td><%= post.categoria_nombre || "—" %></td>
+          <td class="celda-visitas"><%= post.visitas %></td>
           <td><%= post.fecha_creacion %></td>
           <td class="acciones">
             <a href="/post/<%= post.id %>" target="_blank">Ver</a>

@@ -104,6 +104,11 @@ router.get("/post/:id", (req, res) => {
     return res.status(404).send("Artículo no encontrado");
   }
 
+  // Contador de visitas: se suma 1 en cada carga de la pagina publica.
+  // Es informativo, no una analitica exacta (no distingue visitantes
+  // unicos ni filtra bots) - solo se ve en el panel de admin.
+  db.prepare("UPDATE posts SET visitas = visitas + 1 WHERE id = ?").run(post.id);
+
   const comentarios = db
     .prepare("SELECT * FROM comentarios WHERE post_id = ? ORDER BY fecha_creacion ASC")
     .all(post.id);
