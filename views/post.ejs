@@ -28,11 +28,24 @@
 <article class="post-detalle">
   <a href="/" class="volver">&larr; Volver al inicio</a>
 
+  <button
+    type="button"
+    class="boton-compartir"
+    data-url="<%= urlBase %>/post/<%= post.id %>"
+    onclick="
+      navigator.clipboard.writeText(this.dataset.url).then(() => {
+        const textoOriginal = this.textContent;
+        this.textContent = 'Enlace copiado';
+        setTimeout(() => { this.textContent = textoOriginal; }, 2000);
+      });
+    "
+  >Copiar enlace</button>
+
   <% if (post.categoria_nombre) { %>
     <p class="fila-post-meta"><%= post.categoria_nombre %></p>
   <% } %>
   <h1><%= post.titulo %></h1>
-  <p class="fecha">Publicado el <%= post.fecha_creacion %></p>
+  <p class="fecha">Publicado el <%= post.fecha_creacion %> &middot; <%= tiempoLectura %> min de lectura</p>
 
   <% if (post.imagen) { %>
     <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="post-detalle-img" />
@@ -42,6 +55,26 @@
     <%- post.contenido %>
   </div>
 </article>
+
+<% if (relacionados && relacionados.length > 0) { %>
+  <section class="relacionados">
+    <h2>Tambien te puede interesar</h2>
+    <div class="relacionados-lista">
+      <% relacionados.forEach(function(rel) { %>
+        <a href="/post/<%= rel.id %>" class="relacionado-item">
+          <% if (rel.imagen) { %>
+            <img src="<%= rel.imagen %>" alt="" class="relacionado-img" />
+          <% } else { %>
+            <div class="relacionado-img fila-post-img-placeholder" aria-hidden="true">
+              <span><%= rel.titulo.trim().charAt(0).toUpperCase() %></span>
+            </div>
+          <% } %>
+          <span class="relacionado-titulo"><%= rel.titulo %></span>
+        </a>
+      <% }); %>
+    </div>
+  </section>
+<% } %>
 
 <section class="comentarios" id="comentarios">
   <h2>Comentarios <% if (comentarios.length) { %>(<%= comentarios.length %>)<% } %></h2>

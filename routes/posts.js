@@ -6,6 +6,31 @@ const express = require("express");
 const router = express.Router();
 const db = require("../database/db");
 
+// Calcula un tiempo de lectura aproximado a partir del HTML del articulo:
+// quita las etiquetas, cuenta palabras y asume ~200 palabras por minuto
+// (la referencia habitual para contenido tecnico en español).
+function calcularTiempoLectura(html) {
+  const texto = (html || "").replace(/<[^>]*>/g, " ");
+  const palabras = texto.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.ceil(palabras / 200));
+}
+
+// Hasta 3 articulos publicados de la misma categoria, sin contar el actual.
+// Si el articulo no tiene categoria asignada, no hay relacionados que mostrar.
+function obtenerRelacionados(categoriaId, idActual) {
+  if (!categoriaId) return [];
+
+  return db
+    .prepare(
+      `SELECT id, titulo, resumen, imagen
+       FROM posts
+       WHERE categoria_id = ? AND estado = 'publicado' AND id != ?
+       ORDER BY fecha_creacion DESC
+       LIMIT 3`
+    )
+    .all(categoriaId, idActual);
+}
+
 // GET / -> Página de inicio con todos los artículos, del más reciente al más antiguo
 // Admite un filtro opcional por categoría: /?categoria=2
 router.get("/", (req, res) => {
@@ -67,7 +92,13 @@ router.get("/post/:id", (req, res) => {
     .prepare("SELECT * FROM comentarios WHERE post_id = ? ORDER BY fecha_creacion ASC")
     .all(post.id);
 
-  res.render("post", { post, comentarios, errorComentario: null });
+  res.render("post", {
+    post,
+    comentarios,
+    errorComentario: null,
+    tiempoLectura: calcularTiempoLectura(post.contenido),
+    relacionados: obtenerRelacionados(post.categoria_id, post.id),
+  });
 });
 
 // POST /post/:id/comentarios -> Añadir un comentario a un artículo. Público,
@@ -98,6 +129,8 @@ router.post("/post/:id/comentarios", (req, res) => {
       post: postCompleto,
       comentarios,
       errorComentario: "Escribe tu nombre y un comentario antes de enviar",
+      tiempoLectura: calcularTiempoLectura(postCompleto.contenido),
+      relacionados: obtenerRelacionados(postCompleto.categoria_id, postCompleto.id),
     });
   }
 

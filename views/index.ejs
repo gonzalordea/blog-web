@@ -45,11 +45,15 @@
 
   <% posts.forEach(function(post) { %>
     <article class="fila-post">
-      <% if (post.imagen) { %>
-        <a href="/post/<%= post.id %>" class="fila-post-img-envoltorio">
+      <a href="/post/<%= post.id %>" class="fila-post-img-envoltorio">
+        <% if (post.imagen) { %>
           <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="fila-post-img" />
-        </a>
-      <% } %>
+        <% } else { %>
+          <div class="fila-post-img fila-post-img-placeholder" aria-hidden="true">
+            <span><%= post.titulo.trim().charAt(0).toUpperCase() %></span>
+          </div>
+        <% } %>
+      </a>
       <div class="fila-post-contenido">
         <p class="fila-post-meta">
           <% if (post.categoria_nombre) { %><%= post.categoria_nombre %><% } else { %>Sin categoría<% } %>

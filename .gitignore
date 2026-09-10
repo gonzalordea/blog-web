@@ -3,3 +3,6 @@ database/blog.db
 .env
 public/uploads/*
 !public/uploads/.gitkeep
+
+# Carpeta temporal usada por Claude para mover archivos que no puede borrar
+_to_delete/

@@ -15,6 +15,37 @@
   --fuente-mono: "IBM Plex Mono", monospace;
 }
 
+/* Modo oscuro: sigue el ajuste del sistema operativo/navegador del lector.
+   Se reutiliza la misma paleta (mismos acentos, algo mas claros para
+   mantener contraste), asi que el sitio se sigue sintiendo igual, solo que
+   invertido. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #10151d;
+    --bg-elevada: #1a212c;
+    --tinta: #eef1f6;
+    --tinta-tenue: #9aa7b8;
+    --borde: #2b3542;
+    --acento: #6c93ff;
+    --acento-calido: #e2984a;
+  }
+
+  .mensaje-error {
+    background: rgba(185, 28, 28, 0.18);
+    color: #ff8080;
+  }
+
+  .etiqueta-estado--publicado {
+    color: #4ade80;
+    border-color: #4ade80;
+    background: rgba(74, 222, 128, 0.12);
+  }
+
+  .form-borrar button {
+    color: #ff8080;
+  }
+}
+
 * {
   box-sizing: border-box;
 }
@@ -256,6 +287,22 @@ body {
   transform: scale(1.05);
 }
 
+/* Post sin imagen propia: degradado de marca + inicial del titulo, para que
+   ninguna fila del listado quede "coja" frente a las que si tienen foto. */
+.fila-post-img-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--acento) 0%, var(--acento-calido) 100%);
+}
+
+.fila-post-img-placeholder span {
+  font-family: var(--fuente-titular);
+  font-style: italic;
+  font-size: 2.6rem;
+  color: rgba(255, 255, 255, 0.92);
+}
+
 .fila-post-meta {
   font-family: var(--fuente-mono);
   font-size: 0.78rem;
@@ -317,6 +364,25 @@ body {
   color: var(--acento);
 }
 
+.boton-compartir {
+  margin: 0 0 1.5rem 1rem;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tinta-tenue);
+  font: inherit;
+  font-size: 0.92rem;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  cursor: pointer;
+  transition: color 0.15s ease, text-decoration-color 0.15s ease;
+}
+
+.boton-compartir:hover {
+  color: var(--acento);
+  text-decoration-color: var(--acento);
+}
+
 .post-detalle h1 {
   font-family: var(--fuente-titular);
   font-size: 2.1rem;
@@ -349,6 +415,82 @@ body {
 
 .post-detalle-contenido p {
   margin-bottom: 1.1rem;
+}
+
+/* Bloques de codigo (resaltados con Prism.js) y codigo en linea */
+.post-detalle-contenido pre {
+  margin: 1.4rem 0;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.post-detalle-contenido pre[class*="language-"] {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.post-detalle-contenido :not(pre) > code {
+  font-family: var(--fuente-mono);
+  font-size: 0.88em;
+  background: rgba(47, 93, 227, 0.09);
+  color: var(--acento);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+}
+
+/* Articulos relacionados */
+.relacionados {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--borde);
+}
+
+.relacionados h2 {
+  font-family: var(--fuente-titular);
+  font-size: 1.3rem;
+  margin: 0 0 1.2rem;
+}
+
+.relacionados-lista {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.2rem;
+}
+
+.relacionado-item {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.relacionado-img {
+  width: 100%;
+  height: 110px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 0.6rem;
+}
+
+.relacionado-img.fila-post-img-placeholder span {
+  font-size: 1.8rem;
+}
+
+.relacionado-titulo {
+  display: block;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--tinta);
+  line-height: 1.35;
+}
+
+.relacionado-item:hover .relacionado-titulo {
+  color: var(--acento);
+}
+
+@media (max-width: 640px) {
+  .relacionados-lista {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Comentarios */
