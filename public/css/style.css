@@ -480,6 +480,42 @@ body {
   margin-bottom: 1.5rem;
 }
 
+/* Indice automatico (solo aparece si el articulo tiene 2 o mas apartados) */
+.indice-articulo {
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 1.1rem 1.4rem;
+  margin: 1.5rem 0 2rem;
+}
+
+.indice-titulo {
+  margin: 0 0 0.6rem;
+  font-family: var(--fuente-mono);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tinta-tenue);
+}
+
+.indice-lista {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.indice-lista a {
+  color: var(--acento);
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+
+.indice-lista a:hover {
+  text-decoration: underline;
+}
+
 .post-detalle-contenido {
   font-size: 1.05rem;
 }
@@ -830,6 +866,33 @@ body {
 
 .formulario-inline button {
   margin-top: 0;
+}
+
+/* Boton flotante "volver arriba" */
+.boton-arriba {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: var(--acento);
+  color: #fff;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(27, 36, 48, 0.22);
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 20;
+}
+
+.boton-arriba:hover {
+  transform: translateY(-2px);
+}
+
+.boton-arriba[hidden] {
+  display: none;
 }
 
 /* Pie de página */
