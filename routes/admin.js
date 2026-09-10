@@ -133,12 +133,15 @@ router.get("/posts/nuevo", requiereLogin, (req, res) => {
 });
 
 router.post("/posts/nuevo", requiereLogin, subirImagenConError, (req, res) => {
-  const { titulo, resumen, contenido, categoria_id } = req.body;
+  const { titulo, resumen, contenido, categoria_id, estado } = req.body;
   const imagen = req.file ? `/uploads/${req.file.filename}` : null;
+  // Si no se manda un valor reconocido, se crea como borrador por defecto
+  // (más seguro: así un artículo nunca se publica solo por un despiste).
+  const estadoFinal = estado === "publicado" ? "publicado" : "borrador";
 
   db.prepare(
-    "INSERT INTO posts (titulo, resumen, contenido, imagen, categoria_id) VALUES (?, ?, ?, ?, ?)"
-  ).run(titulo, resumen, contenido, imagen, categoria_id || null);
+    "INSERT INTO posts (titulo, resumen, contenido, imagen, categoria_id, estado) VALUES (?, ?, ?, ?, ?, ?)"
+  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal);
 
   res.redirect("/admin/dashboard");
 });
@@ -158,21 +161,36 @@ router.get("/posts/:id/editar", requiereLogin, (req, res) => {
 });
 
 router.post("/posts/:id/editar", requiereLogin, subirImagenConError, (req, res) => {
-  const { titulo, resumen, contenido, categoria_id } = req.body;
-  const postActual = db.prepare("SELECT imagen FROM posts WHERE id = ?").get(req.params.id);
+  const { titulo, resumen, contenido, categoria_id, estado } = req.body;
+  const postActual = db.prepare("SELECT imagen, estado FROM posts WHERE id = ?").get(req.params.id);
 
   // Si se sube un archivo nuevo, reemplaza la imagen (y borra la anterior).
   // Si no, se conserva la que ya tenía el artículo.
   const imagen = req.file ? `/uploads/${req.file.filename}` : postActual?.imagen || null;
+  const estadoFinal = estado === "publicado" ? "publicado" : "borrador";
 
   if (req.file && postActual?.imagen) {
     borrarImagenAnterior(req, postActual.imagen);
   }
 
   db.prepare(
-    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ? WHERE id = ?"
-  ).run(titulo, resumen, contenido, imagen, categoria_id || null, req.params.id);
+    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ?, estado = ? WHERE id = ?"
+  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal, req.params.id);
 
+  res.redirect("/admin/dashboard");
+});
+
+// ---------------------------------------------------------------------
+// CAMBIAR ESTADO (borrador <-> publicado)
+// ---------------------------------------------------------------------
+router.post("/posts/:id/estado", requiereLogin, (req, res) => {
+  const post = db.prepare("SELECT estado FROM posts WHERE id = ?").get(req.params.id);
+  if (!post) {
+    return res.status(404).send("Artículo no encontrado");
+  }
+
+  const nuevoEstado = post.estado === "publicado" ? "borrador" : "publicado";
+  db.prepare("UPDATE posts SET estado = ? WHERE id = ?").run(nuevoEstado, req.params.id);
   res.redirect("/admin/dashboard");
 });
 

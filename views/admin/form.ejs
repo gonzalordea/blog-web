@@ -24,6 +24,12 @@
       <% }); %>
     </select>
 
+    <label for="estado">Estado</label>
+    <select id="estado" name="estado">
+      <option value="borrador" <%= (!post || post.estado !== "publicado") ? "selected" : "" %>>Borrador (solo lo ves tú desde el panel)</option>
+      <option value="publicado" <%= (post && post.estado === "publicado") ? "selected" : "" %>>Publicado (visible en la web)</option>
+    </select>
+
     <label for="imagen">Imagen del artículo (opcional, JPG/PNG/WEBP/GIF, máx. 5 MB)</label>
     <% if (post && post.imagen) { %>
       <img src="<%= post.imagen %>" alt="Imagen actual" class="form-imagen-actual" />
@@ -34,7 +40,7 @@
     <label for="contenido">Contenido (admite HTML básico: &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;...)</label>
     <textarea id="contenido" name="contenido" rows="12" required><%= post ? post.contenido : '' %></textarea>
 
-    <button type="submit"><%= post ? "Guardar cambios" : "Publicar artículo" %></button>
+    <button type="submit"><%= post ? "Guardar cambios" : "Guardar artículo" %></button>
   </form>
 </section>
 

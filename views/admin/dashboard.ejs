@@ -18,6 +18,7 @@
     <thead>
       <tr>
         <th>Título</th>
+        <th>Estado</th>
         <th>Categoría</th>
         <th>Fecha</th>
         <th>Acciones</th>
@@ -27,11 +28,19 @@
       <% posts.forEach(function(post) { %>
         <tr>
           <td><%= post.titulo %></td>
+          <td>
+            <span class="etiqueta-estado etiqueta-estado--<%= post.estado %>">
+              <%= post.estado === "publicado" ? "Publicado" : "Borrador" %>
+            </span>
+          </td>
           <td><%= post.categoria_nombre || "—" %></td>
           <td><%= post.fecha_creacion %></td>
           <td class="acciones">
             <a href="/post/<%= post.id %>" target="_blank">Ver</a>
             <a href="/admin/posts/<%= post.id %>/editar">Editar</a>
+            <form action="/admin/posts/<%= post.id %>/estado" method="POST" class="form-estado">
+              <button type="submit"><%= post.estado === "publicado" ? "Pasar a borrador" : "Publicar" %></button>
+            </form>
             <form action="/admin/posts/<%= post.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Seguro que quieres borrar este artículo?');">
               <button type="submit">Borrar</button>
             </form>

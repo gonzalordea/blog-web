@@ -554,8 +554,28 @@ body {
   text-decoration: none;
 }
 
-.form-borrar {
+.form-borrar,
+.form-estado {
   display: inline;
+}
+
+.etiqueta-estado {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--borde);
+}
+
+.etiqueta-estado--publicado {
+  color: #1a7f4b;
+  border-color: #1a7f4b;
+  background: rgba(26, 127, 75, 0.08);
+}
+
+.etiqueta-estado--borrador {
+  color: var(--tinta-tenue);
 }
 
 .celda-comentario {

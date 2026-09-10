@@ -73,6 +73,21 @@ if (!tieneCategoriaId) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir la columna estado a "posts" si todavía no existe
+// ---------------------------------------------------------------------
+// "estado" distingue entre artículos ya publicados (visibles en la web
+// pública) y borradores (solo visibles desde el panel admin). Por defecto
+// se marcan como "publicado" para no cambiar el comportamiento de los
+// artículos que ya existían ni del formulario manual del panel admin.
+
+const tieneEstado = columnasPosts.some((columna) => columna.name === "estado");
+
+if (!tieneEstado) {
+  db.exec("ALTER TABLE posts ADD COLUMN estado TEXT NOT NULL DEFAULT 'publicado'");
+  console.log("Migración aplicada: columna estado añadida a posts");
+}
+
+// ---------------------------------------------------------------------
 // Categorías de ejemplo (solo se crean si la tabla está vacía)
 // ---------------------------------------------------------------------
 

@@ -1,0 +1,843 @@
+<title>Blog Dev por dentro</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #faf9f5;
+    --surface: #ffffff;
+    --surface-2: #f1efe6;
+    --ink: #1b2430;
+    --ink-dim: #5c6577;
+    --ink-faint: #8890a0;
+    --line: #e1dfd4;
+    --line-strong: #cac7b8;
+    --accent: #2f5de3;
+    --accent-ink: #1c3fa8;
+    --accent-soft: #e8edfc;
+    --warm: #b8600f;
+    --warm-soft: #f7e9d8;
+    --code-ink: #2a3142;
+    --shadow: 0 1px 2px rgba(27,36,48,0.04), 0 8px 24px -12px rgba(27,36,48,0.12);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151c;
+      --surface: #181c25;
+      --surface-2: #1f2430;
+      --ink: #e8eaf0;
+      --ink-dim: #9aa2b4;
+      --ink-faint: #6b7385;
+      --line: #2a2f3c;
+      --line-strong: #383f4f;
+      --accent: #7c9cff;
+      --accent-ink: #b6c6ff;
+      --accent-soft: #202a4a;
+      --warm: #e3a45c;
+      --warm-soft: #3a2c1a;
+      --code-ink: #dbe0ee;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151c;
+    --surface: #181c25;
+    --surface-2: #1f2430;
+    --ink: #e8eaf0;
+    --ink-dim: #9aa2b4;
+    --ink-faint: #6b7385;
+    --line: #2a2f3c;
+    --line-strong: #383f4f;
+    --accent: #7c9cff;
+    --accent-ink: #b6c6ff;
+    --accent-soft: #202a4a;
+    --warm: #e3a45c;
+    --warm-soft: #3a2c1a;
+    --code-ink: #dbe0ee;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  h1, h2, h3 {
+    font-family: "Fraunces", Georgia, serif;
+    color: var(--ink);
+    text-wrap: balance;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  }
+  a { color: var(--accent); }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 720px);
+    gap: 3.5rem;
+    align-items: start;
+  }
+
+  /* ---------- Masthead ---------- */
+  .masthead {
+    grid-column: 1 / -1;
+    max-width: 720px;
+    margin-left: 220px;
+    padding-bottom: 2.25rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0.5rem;
+  }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+  }
+  .masthead h1 {
+    font-size: 2.5rem;
+    margin: 0 0 0.7rem;
+    font-style: italic;
+    font-weight: 500;
+  }
+  .masthead .lede {
+    color: var(--ink-dim);
+    font-size: 1.08rem;
+    max-width: 62ch;
+    margin: 0 0 1.4rem;
+  }
+  .stack-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chip {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 5px;
+    color: var(--ink-dim);
+    background: var(--surface);
+  }
+
+  /* ---------- TOC ---------- */
+  .toc {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+    font-size: 0.87rem;
+  }
+  .toc-label {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 0.8rem;
+  }
+  .toc ol {
+    list-style: none;
+    margin: 0; padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    counter-reset: toc;
+    border-left: 1px solid var(--line);
+  }
+  .toc a {
+    counter-increment: toc;
+    display: block;
+    padding: 0.4rem 0 0.4rem 0.9rem;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color .15s, border-color .15s;
+  }
+  .toc a::before {
+    content: counter(toc, decimal-leading-zero) "  ";
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+  }
+  .toc a:hover { color: var(--ink); border-left-color: var(--line-strong); }
+
+  /* ---------- Main content ---------- */
+  main { min-width: 0; }
+  section { margin-bottom: 3.6rem; scroll-margin-top: 1.5rem; }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin-bottom: 1.1rem;
+  }
+  .section-num {
+    font-family: "IBM Plex Mono", monospace;
+    color: var(--accent);
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  section h2 { font-size: 1.5rem; margin: 0; }
+  section h3 {
+    font-size: 1.08rem;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 600;
+    margin: 1.6rem 0 0.6rem;
+  }
+  section p { margin: 0 0 1rem; color: var(--ink); }
+  section p.dim { color: var(--ink-dim); }
+  section ul, section ol.plain { margin: 0 0 1rem; padding-left: 1.3rem; }
+  section li { margin-bottom: 0.4rem; }
+  strong { font-weight: 600; }
+
+  .lead-in { color: var(--ink-dim); font-size: 1rem; max-width: 66ch; }
+
+  /* file/code blocks */
+  .file {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 0 0 1.2rem;
+    box-shadow: var(--shadow);
+  }
+  .file-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.9rem;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--line);
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-dim);
+  }
+  .file-tab .dots { display: flex; gap: 4px; margin-right: 0.3rem; }
+  .file-tab .dots span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--line-strong);
+  }
+  .file pre {
+    margin: 0;
+    padding: 0.9rem 1.1rem;
+    overflow-x: auto;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--code-ink);
+  }
+  .file pre .c { color: var(--ink-faint); font-style: italic; }
+  .file pre .k { color: var(--accent-ink); }
+  .file pre .s { color: var(--warm); }
+
+  p code, li code {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-size: 0.87em;
+    color: var(--code-ink);
+    white-space: nowrap;
+  }
+
+  .route {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0 0 0.35rem;
+  }
+  .method {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.12rem 0.45rem;
+    border-radius: 4px;
+    letter-spacing: 0.02em;
+  }
+  .method.get { background: var(--accent-soft); color: var(--accent-ink); }
+  .method.post { background: var(--warm-soft); color: var(--warm); }
+  .route code { white-space: nowrap; }
+  .route .desc { color: var(--ink-dim); font-size: 0.9rem; }
+
+  .route-group {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.2rem;
+  }
+  .route-group + p { margin-top: 1.2rem; }
+
+  table.schema {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1.2rem;
+    font-size: 0.88rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table.schema caption {
+    text-align: left;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.8rem;
+    color: var(--ink-dim);
+    padding: 0.7rem 1rem 0;
+    caption-side: top;
+  }
+  table.schema th, table.schema td {
+    text-align: left;
+    padding: 0.55rem 0.9rem;
+    border-bottom: 1px solid var(--line);
+  }
+  table.schema th {
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    color: var(--ink-dim);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.schema tr:last-child td { border-bottom: none; }
+  table.schema td.col-name { font-family: "IBM Plex Mono", monospace; color: var(--code-ink); }
+  .table-wrap { overflow-x: auto; }
+
+  .note {
+    display: flex;
+    gap: 0.7rem;
+    background: var(--accent-soft);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 0.85rem 1rem;
+    margin: 0 0 1.2rem;
+    font-size: 0.92rem;
+  }
+  .note.warn { background: var(--warm-soft); border-left-color: var(--warm); }
+  .note b { display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; color: var(--ink-dim); }
+
+  figure { margin: 1.4rem 0; }
+  figure svg { display: block; max-width: 100%; height: auto; }
+  figcaption {
+    font-size: 0.85rem;
+    color: var(--ink-dim);
+    margin-top: 0.6rem;
+    text-align: center;
+  }
+
+  .tree {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 0.82rem;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    line-height: 1.85;
+    color: var(--code-ink);
+    margin-bottom: 1.2rem;
+    overflow-x: auto;
+  }
+  .tree .dim { color: var(--ink-faint); }
+  .tree .hl { color: var(--accent-ink); }
+
+  .flow-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.8rem;
+    margin: 0 0 1.2rem;
+  }
+  .flow-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+  }
+  .flow-card .n { font-family: "IBM Plex Mono", monospace; font-size: 0.72rem; color: var(--accent); margin-bottom: 0.3rem; }
+  .flow-card h4 { margin: 0 0 0.3rem; font-size: 0.92rem; font-family: "IBM Plex Sans"; }
+  .flow-card p { margin: 0; font-size: 0.82rem; color: var(--ink-dim); }
+
+  footer.doc-foot {
+    grid-column: 2;
+    border-top: 1px solid var(--line);
+    padding-top: 1.5rem;
+    color: var(--ink-faint);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 880px) {
+    .page { grid-template-columns: 1fr; }
+    .masthead { margin-left: 0; }
+    .toc { position: static; margin-bottom: 1rem; }
+    .toc ol { display: none; }
+    footer.doc-foot { grid-column: 1; }
+  }
+</style>
+
+<div class="page">
+  <div class="masthead">
+    <p class="eyebrow">Guía técnica — para quien lo está aprendiendo</p>
+    <h1>Blog Dev, por dentro</h1>
+    <p class="lede">Cómo está construida tu aplicación: qué hace cada archivo, cómo viaja una petición desde el navegador hasta la base de datos, y por qué está organizado así. Pensado para leerse junto al código.</p>
+    <div class="stack-row">
+      <span class="chip">Node.js</span>
+      <span class="chip">Express</span>
+      <span class="chip">EJS</span>
+      <span class="chip">node:sqlite</span>
+      <span class="chip">express-session</span>
+      <span class="chip">multer</span>
+      <span class="chip">bcryptjs</span>
+      <span class="chip">dotenv</span>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <p class="toc-label">Contenidos</p>
+    <ol>
+      <li><a href="#arranque">Cómo arranca</a></li>
+      <li><a href="#estructura">Estructura de carpetas</a></li>
+      <li><a href="#vistas">Vistas (EJS)</a></li>
+      <li><a href="#datos">Base de datos</a></li>
+      <li><a href="#publicas">Rutas públicas</a></li>
+      <li><a href="#auth">Login y sesión</a></li>
+      <li><a href="#admin">Panel admin</a></li>
+      <li><a href="#imagenes">Subida de imágenes</a></li>
+      <li><a href="#comentarios">Comentarios</a></li>
+      <li><a href="#seo">SEO</a></li>
+      <li><a href="#seguridad">Seguridad</a></li>
+      <li><a href="#entorno">Variables de entorno</a></li>
+      <li><a href="#despliegue">Despliegue (Railway)</a></li>
+      <li><a href="#siguientes">Qué falta</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <section id="arranque">
+      <div class="section-head"><span class="section-num">01</span><h2>Cómo arranca la aplicación</h2></div>
+      <p class="lead-in">Todo empieza en <code>server.js</code>. Cuando ejecutas <code>npm start</code>, ese archivo se lee de arriba a abajo una vez, y el <strong>orden importa</strong>: cada línea deja algo listo para la siguiente.</p>
+
+      <figure role="img" aria-label="Diagrama del arranque y el ciclo de una petición: dotenv carga las variables, database/db.js prepara la base de datos, luego los middlewares, y por último Express prueba las rutas en orden hasta encontrar la que coincide.">
+        <svg viewBox="0 0 640 470" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g fill="none" stroke="currentColor" stroke-width="1.4" opacity="0.55">
+            <line x1="320" y1="38" x2="320" y2="62" marker-end="url(#arr)"/>
+            <line x1="320" y1="112" x2="320" y2="136" marker-end="url(#arr)"/>
+            <line x1="320" y1="186" x2="320" y2="210" marker-end="url(#arr)"/>
+            <line x1="320" y1="260" x2="320" y2="284" marker-end="url(#arr)"/>
+            <line x1="320" y1="284" x2="130" y2="322" marker-end="url(#arr)"/>
+            <line x1="320" y1="284" x2="320" y2="322" marker-end="url(#arr)"/>
+            <line x1="320" y1="284" x2="510" y2="322" marker-end="url(#arr)"/>
+            <line x1="130" y1="366" x2="320" y2="404" marker-end="url(#arr)"/>
+            <line x1="320" y1="366" x2="320" y2="404" marker-end="url(#arr)"/>
+            <line x1="510" y1="366" x2="320" y2="404" marker-end="url(#arr)"/>
+          </g>
+
+          <text x="320" y="20" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="currentColor" opacity="0.7">Petición HTTP entrante</text>
+
+          <g>
+            <rect x="180" y="62" width="280" height="50" rx="7" fill="none" stroke="currentColor" opacity="0.35"/>
+            <text x="200" y="82" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">1 · require("dotenv").config()</text>
+            <text x="200" y="99" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="currentColor" opacity="0.6">lee .env → process.env</text>
+          </g>
+
+          <g>
+            <rect x="180" y="136" width="280" height="50" rx="7" fill="none" stroke="currentColor" opacity="0.35"/>
+            <text x="200" y="156" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">2 · require("./database/db")</text>
+            <text x="200" y="173" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="currentColor" opacity="0.6">crea tablas y usuario admin si faltan</text>
+          </g>
+
+          <g>
+            <rect x="180" y="210" width="280" height="50" rx="7" fill="none" stroke="currentColor" opacity="0.35"/>
+            <text x="200" y="230" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">3 · Middlewares</text>
+            <text x="200" y="247" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="currentColor" opacity="0.6">estáticos · sesión · res.locals</text>
+          </g>
+
+          <text x="320" y="278" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="10.5" fill="currentColor" opacity="0.55">Express prueba cada router en orden</text>
+
+          <g>
+            <rect x="10" y="322" width="240" height="44" rx="7" fill="none" stroke="currentColor" opacity="0.35"/>
+            <text x="130" y="349" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">seoRoutes → "/"</text>
+          </g>
+          <g>
+            <rect x="200" y="322" width="240" height="44" rx="7" fill="none" stroke="currentColor" opacity="0.6"/>
+            <text x="320" y="349" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">postsRoutes → "/"</text>
+          </g>
+          <g>
+            <rect x="390" y="322" width="240" height="44" rx="7" fill="none" stroke="currentColor" opacity="0.35"/>
+            <text x="510" y="349" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">adminRoutes → "/admin"</text>
+          </g>
+
+          <g>
+            <rect x="180" y="404" width="280" height="50" rx="7" fill="currentColor" opacity="0.08" stroke="currentColor" stroke-opacity="0.5"/>
+            <text x="320" y="424" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="currentColor">res.render(...) / res.redirect(...)</text>
+            <text x="320" y="441" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="11" fill="currentColor" opacity="0.6">Respuesta: HTML (EJS) o cabecera Location</text>
+          </g>
+        </svg>
+        <figcaption>El pedido baja por la pila de middlewares y luego Express prueba cada router en el orden en que se montaron en <code>server.js</code>, hasta que uno coincide con la URL.</figcaption>
+      </figure>
+
+      <p>Los tres pasos numerados solo se ejecutan <strong>una vez</strong>, al arrancar el proceso. Los tres routers, en cambio, se consultan en <strong>cada petición</strong>. Por eso el orden de estas dos líneas en <code>server.js</code> es el que decide qué controla qué:</p>
+
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>server.js</div>
+        <pre>require("dotenv").config();          <span class="c">// 1. primero: llena process.env</span>
+require("./database/db");            <span class="c">// 2. usa esas variables para conectar</span>
+<span class="c">// ... configurar Express, vistas, middlewares ...</span>
+app.use("/", seoRoutes);
+app.use("/", postsRoutes);
+app.use("/admin", adminRoutes);
+app.listen(PUERTO, ...);</pre>
+      </div>
+
+      <p>Si invirtieras las dos primeras líneas, <code>database/db.js</code> leería <code>process.env.ADMIN_PASSWORD</code> antes de que <code>dotenv</code> lo hubiera cargado desde tu <code>.env</code> — y usaría el valor por defecto sin que te dieras cuenta. Es la típica trampa de orden de carga en Node.</p>
+    </section>
+
+    <section id="estructura">
+      <div class="section-head"><span class="section-num">02</span><h2>Estructura de carpetas</h2></div>
+      <p class="lead-in">Cada carpeta tiene una única responsabilidad. Ningún archivo de <code>routes/</code> sabe cómo se dibuja una página, y ningún archivo de <code>views/</code> sabe cómo se consulta la base de datos — se comunican solo a través de los datos que <code>res.render()</code> les pasa.</p>
+      <div class="tree">blog-web/
+├── server.js              <span class="dim">arranque, middlewares, conecta los routers</span>
+├── database/
+│   ├── db.js               <span class="hl">conexión SQLite + creación de tablas</span>
+│   └── blog.db              <span class="dim">el archivo de datos (no se sube a git)</span>
+├── routes/
+│   ├── posts.js             <span class="dim">portada, detalle de post, comentarios</span>
+│   ├── admin.js             <span class="dim">login, CRUD, imágenes, moderación</span>
+│   └── seo.js               <span class="dim">robots.txt y sitemap.xml</span>
+├── views/                  <span class="dim">plantillas EJS — el HTML con huecos</span>
+│   ├── partials/             <span class="dim">header.ejs y footer.ejs, compartidos</span>
+│   ├── admin/                 <span class="dim">vistas del panel</span>
+│   ├── index.ejs
+│   └── post.ejs
+└── public/
+    ├── css/style.css        <span class="dim">servido tal cual, sin procesar</span>
+    └── uploads/              <span class="dim">imágenes subidas (o el volumen en prod)</span></div>
+      <p>El patrón que se repite en todo el proyecto es <strong>ruta → consulta → vista</strong>: una función en <code>routes/</code> recibe la petición, pide datos a <code>database/db.js</code> con SQL, y se los entrega a un archivo de <code>views/</code> para que los convierta en HTML. Ninguna consulta SQL vive dentro de un archivo <code>.ejs</code>.</p>
+    </section>
+
+    <section id="vistas">
+      <div class="section-head"><span class="section-num">03</span><h2>Las vistas (EJS)</h2></div>
+      <p class="lead-in">EJS es HTML normal con trocitos de JavaScript metidos entre <code>&lt;% %&gt;</code>. No hay componentes ni estado: cada vista es una función que recibe un objeto de datos y devuelve texto.</p>
+
+      <table class="schema">
+        <caption>Las tres formas de escribir en una plantilla</caption>
+        <tr><th>Sintaxis</th><th>Qué hace</th><th>Cuándo usarla</th></tr>
+        <tr><td class="col-name">&lt;%= valor %&gt;</td><td>Imprime <strong>escapando</strong> HTML</td><td>Casi siempre — texto de usuarios, títulos, nombres</td></tr>
+        <tr><td class="col-name">&lt;%- valor %&gt;</td><td>Imprime <strong>sin escapar</strong>, HTML crudo</td><td>Solo contenido que ya confías (el artículo del admin)</td></tr>
+        <tr><td class="col-name">&lt;% ... %&gt;</td><td>Ejecuta JS sin imprimir nada</td><td><code>if</code>, <code>forEach</code>, variables intermedias</td></tr>
+      </table>
+
+      <p>Esa diferencia entre <code>&lt;%=</code> y <code>&lt;%-</code> no es un detalle de estilo — es la barrera contra XSS de toda la app. El contenido de un artículo (que escribe el admin) se imprime con <code>&lt;%- post.contenido %&gt;</code> porque ahí sí quieres que <code>&lt;h2&gt;</code> o <code>&lt;strong&gt;</code> se rendericen. Un comentario de un lector, en cambio, se imprime con <code>&lt;%= comentario.contenido %&gt;</code>: si alguien escribe <code>&lt;script&gt;...&lt;/script&gt;</code> en el formulario público, aparece como texto plano en pantalla, no se ejecuta.</p>
+
+      <h3>Dos plantillas comparten cabecera y pie</h3>
+      <p><code>views/partials/header.ejs</code> abre el <code>&lt;html&gt;</code>, mete las etiquetas SEO/Open Graph y dibuja la barra de navegación; <code>footer.ejs</code> lo cierra. Toda vista empieza con un <code>include</code>:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>views/post.ejs</div>
+        <pre>&lt;%- include('partials/header', {
+  metaTitulo: post.titulo + " — Blog Dev",
+  metaDescripcion: resumenLimpio,
+  metaCanonica: "/post/" + post.id,
+}) %&gt;
+<span class="c">&lt;!-- ... el resto de la página ... --&gt;</span>
+&lt;%- include('partials/footer') %&gt;</pre>
+      </div>
+      <p>El objeto que le pasas al <code>include</code> es opcional variable por variable: <code>header.ejs</code> comprueba con <code>typeof metaTitulo !== "undefined"</code> y, si no te molestaste en pasarlo, usa un valor por defecto (los de la portada). Así ninguna vista está obligada a repetir las seis variables de SEO si no le importan.</p>
+
+      <h3>Dos variables viven en todas las plantillas sin que nadie las pase</h3>
+      <p>En <code>server.js</code>, dos middlewares corren antes que cualquier ruta y escriben en <code>res.locals</code> — un objeto que Express inyecta automáticamente en <em>cada</em> <code>res.render()</code> posterior, sin que la ruta tenga que acordarse de incluirlo:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>server.js</div>
+        <pre>app.use((req, res, next) => {
+  res.locals.sesionIniciada = !!req.session.usuarioId;
+  next();
+});
+app.use((req, res, next) => {
+  res.locals.urlBase = `${req.protocol}://${req.get("host")}`;
+  next();
+});</pre>
+      </div>
+      <p><code>sesionIniciada</code> es lo que decide si <code>header.ejs</code> muestra el enlace "Panel admin" o nada. <code>urlBase</code> es el dominio completo (funciona igual en <code>localhost:3000</code> que en Railway) — sin él, las URLs canónicas y las de Open Graph tendrían que llevar el dominio escrito a mano en el código.</p>
+    </section>
+
+    <section id="datos">
+      <div class="section-head"><span class="section-num">04</span><h2>La base de datos</h2></div>
+      <p class="lead-in"><code>database/db.js</code> usa <code>node:sqlite</code>, el módulo de SQLite incluido en Node desde la versión 22.13 — sin instalar nada ni compilar nada nativo. Al hacer <code>require("./database/db")</code> desde <code>server.js</code>, este archivo se ejecuta una vez y deja la base de datos lista.</p>
+
+      <div class="table-wrap">
+      <table class="schema">
+        <caption>posts</caption>
+        <tr><th>Columna</th><th>Tipo</th><th>Nota</th></tr>
+        <tr><td class="col-name">id</td><td>INTEGER PK</td><td>autoincremental</td></tr>
+        <tr><td class="col-name">titulo, resumen, contenido</td><td>TEXT</td><td><code>contenido</code> admite HTML básico</td></tr>
+        <tr><td class="col-name">imagen</td><td>TEXT</td><td>ruta pública, ej. <code>/uploads/xxx.png</code>, o null</td></tr>
+        <tr><td class="col-name">categoria_id</td><td>INTEGER</td><td>referencia a <code>categorias.id</code>, o null</td></tr>
+        <tr><td class="col-name">fecha_creacion</td><td>TEXT</td><td>se rellena sola con <code>datetime('now','localtime')</code></td></tr>
+      </table>
+      </div>
+      <div class="table-wrap">
+      <table class="schema">
+        <caption>categorias · usuarios · comentarios</caption>
+        <tr><th>Tabla</th><th>Columnas propias</th><th>Relación</th></tr>
+        <tr><td class="col-name">categorias</td><td>id, nombre (UNIQUE)</td><td>un post apunta a una categoría (o ninguna)</td></tr>
+        <tr><td class="col-name">usuarios</td><td>id, email (UNIQUE), password</td><td>independiente — solo el admin</td></tr>
+        <tr><td class="col-name">comentarios</td><td>id, post_id, nombre, contenido, fecha_creacion</td><td>cada comentario apunta a un post</td></tr>
+      </table>
+      </div>
+
+      <h3>Migraciones a mano, sin librería</h3>
+      <p>Las cuatro tablas se crean con <code>CREATE TABLE IF NOT EXISTS</code>, así que ejecutar <code>db.js</code> mil veces no rompe nada. El problema es cuando cambias una tabla que <em>ya existía</em>: <code>categoria_id</code> se añadió a <code>posts</code> después de la primera versión del blog, y no puedes meterla en el <code>CREATE TABLE</code> original porque ese bloque solo corre la primera vez. La solución, sin usar ninguna librería de migraciones:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>database/db.js</div>
+        <pre>const columnas = db.prepare("PRAGMA table_info(posts)").all();
+const tieneCategoriaId = columnas.some(c => c.name === "categoria_id");
+if (!tieneCategoriaId) {
+  db.exec("ALTER TABLE posts ADD COLUMN categoria_id INTEGER");
+}</pre>
+      </div>
+      <p>Pregunta a SQLite qué columnas tiene la tabla ahora mismo, y si falta la nueva, la añade. Es el mismo patrón que tendrías que seguir si mañana quieres añadir, por ejemplo, un <code>email</code> opcional a <code>comentarios</code>.</p>
+
+      <h3>El usuario admin se sincroniza en cada arranque</h3>
+      <p>No hay un formulario de registro — el único usuario se crea (o se actualiza) leyendo <code>ADMIN_EMAIL</code> / <code>ADMIN_PASSWORD</code> cada vez que arranca el servidor: si no existe, lo crea; si ya existe, le sobrescribe la contraseña con un nuevo hash de <code>bcrypt</code>. Por eso cambiar <code>ADMIN_PASSWORD</code> en Railway y redesplegar es suficiente para cambiar la contraseña, sin tocar la base de datos a mano.</p>
+    </section>
+
+    <section id="publicas">
+      <div class="section-head"><span class="section-num">05</span><h2>Rutas públicas</h2></div>
+      <p class="lead-in"><code>routes/posts.js</code> — nadie necesita haber iniciado sesión para llegar aquí.</p>
+
+      <div class="route-group">
+        <div class="route"><span class="method get">GET</span><code>/</code><span class="desc">portada, con filtro de categoría y buscador</span></div>
+        <div class="route"><span class="method get">GET</span><code>/post/:id</code><span class="desc">detalle de un artículo</span></div>
+        <div class="route"><span class="method post">POST</span><code>/post/:id/comentarios</code><span class="desc">publicar un comentario</span></div>
+      </div>
+
+      <p>La portada construye el SQL a pedazos según lo que venga en la URL — así una sola consulta cubre "todo", "solo esta categoría", "buscar esta palabra" y "ambas cosas a la vez", sin cuatro funciones distintas:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/posts.js</div>
+        <pre>let sql = `SELECT posts.*, categorias.nombre AS categoria_nombre
+           FROM posts LEFT JOIN categorias ON posts.categoria_id = categorias.id`;
+const condiciones = [];
+const parametros = [];
+
+if (categoriaId) { condiciones.push("posts.categoria_id = ?"); parametros.push(categoriaId); }
+if (busqueda)    { condiciones.push("(titulo LIKE ? OR resumen LIKE ? OR contenido LIKE ?)");
+                    parametros.push(`%${busqueda}%`, `%${busqueda}%`, `%${busqueda}%`); }
+
+if (condiciones.length) sql += " WHERE " + condiciones.join(" AND ");
+const posts = db.prepare(sql).all(...parametros);</pre>
+      </div>
+      <div class="note">
+        <div>
+          <b>Por qué son placeholders (?) y no texto pegado</b>
+          Los valores nunca se concatenan directamente al SQL — se pasan como parámetros separados a <code>.all(...)</code>. Es lo que impide la inyección SQL: si alguien busca <code>"; DROP TABLE posts; --</code>, SQLite lo trata como un texto literal a buscar, nunca como código.
+        </div>
+      </div>
+
+      <p>El formulario de comentarios no exige sesión iniciada — cualquier lector puede publicar. La validación es deliberadamente simple: recorta a 80/2000 caracteres y rechaza vacíos, sin librerías externas:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/posts.js</div>
+        <pre>const nombre = (req.body.nombre || "").trim().slice(0, 80);
+const contenido = (req.body.contenido || "").trim().slice(0, 2000);
+if (!nombre || !contenido) {
+  <span class="c">// vuelve a renderizar la misma página con errorComentario</span>
+}</pre>
+      </div>
+    </section>
+
+    <section id="auth">
+      <div class="section-head"><span class="section-num">06</span><h2>Login y sesión</h2></div>
+      <p class="lead-in">No hay JWT ni tokens — <code>express-session</code> guarda una cookie firmada en el navegador que solo contiene un id de sesión; los datos reales (<code>usuarioId</code>) viven en el servidor, en memoria.</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/admin.js</div>
+        <pre>router.post("/login", (req, res) => {
+  const usuario = db.prepare("SELECT * FROM usuarios WHERE email = ?").get(req.body.email);
+  if (!usuario || !bcrypt.compareSync(req.body.password, usuario.password)) {
+    return res.render("admin/login", { error: "Email o contraseña incorrectos" });
+  }
+  req.session.usuarioId = usuario.id;   <span class="c">// esto es TODO lo que "iniciar sesión" hace</span>
+  res.redirect("/admin/dashboard");
+});</pre>
+      </div>
+      <p>La contraseña nunca se guarda ni se compara en texto plano: <code>bcrypt.compareSync</code> vuelve a aplicar el mismo algoritmo de hash a lo que escribiste y compara los dos hashes, no las contraseñas. Cada ruta protegida pasa por un guardia minúsculo antes de ejecutarse:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/admin.js</div>
+        <pre>function requiereLogin(req, res, next) {
+  if (!req.session.usuarioId) return res.redirect("/admin/login");
+  next();
+}
+router.get("/dashboard", requiereLogin, (req, res) => { ... });</pre>
+      </div>
+      <p><code>requiereLogin</code> se repite como segundo argumento en cada ruta del panel — Express llama a los middlewares en el orden en que aparecen, así que si no hay sesión, la petición nunca llega a la función que borra o crea un post.</p>
+    </section>
+
+    <section id="admin">
+      <div class="section-head"><span class="section-num">07</span><h2>Panel de administración</h2></div>
+      <p class="lead-in">Todo detrás de <code>/admin</code> exige <code>requiereLogin</code>, salvo el propio formulario de login.</p>
+      <div class="route-group">
+        <div class="route"><span class="method get">GET</span><code>/admin/dashboard</code><span class="desc">listado de artículos</span></div>
+        <div class="route"><span class="method get">GET</span><code>/admin/posts/nuevo</code><span class="desc">formulario en blanco</span></div>
+        <div class="route"><span class="method post">POST</span><code>/admin/posts/nuevo</code><span class="desc">crea el artículo</span></div>
+        <div class="route"><span class="method get">GET</span><code>/admin/posts/:id/editar</code><span class="desc">formulario relleno</span></div>
+        <div class="route"><span class="method post">POST</span><code>/admin/posts/:id/editar</code><span class="desc">actualiza</span></div>
+        <div class="route"><span class="method post">POST</span><code>/admin/posts/:id/borrar</code><span class="desc">borra el post, sus comentarios y su imagen</span></div>
+        <div class="route"><span class="method get">GET</span><code>/admin/categorias</code><span class="desc">listado + alta</span></div>
+        <div class="route"><span class="method post">POST</span><code>/admin/categorias/:id/borrar</code><span class="desc">borra; sus posts quedan sin categoría</span></div>
+      </div>
+      <p>Un mismo formulario EJS (<code>admin/form.ejs</code>) sirve para crear <strong>y</strong> editar: la vista recibe <code>post</code> como <code>null</code> o como el registro existente, y decide el título del botón y la acción del <code>&lt;form&gt;</code> con un ternario. Evita mantener dos plantillas casi idénticas.</p>
+      <p>Al borrar categorías y posts, el código elige explícitamente qué pasa con lo relacionado — SQLite no lo hace solo:</p>
+      <ul>
+        <li>Borrar una <strong>categoría</strong> pone <code>categoria_id = NULL</code> en sus posts antes de borrarla — no se los lleva por delante.</li>
+        <li>Borrar un <strong>post</strong> sí borra en cascada sus comentarios y su archivo de imagen — no tendría sentido dejarlos huérfanos.</li>
+      </ul>
+    </section>
+
+    <section id="imagenes">
+      <div class="section-head"><span class="section-num">08</span><h2>Subida de imágenes</h2></div>
+      <p class="lead-in"><code>multer</code> intercepta el formulario (que debe llevar <code>enctype="multipart/form-data"</code>), separa el archivo de los demás campos de texto y lo escribe a disco antes de que tu código de ruta se ejecute.</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/admin.js</div>
+        <pre>const almacenamiento = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, req.app.get("carpetaUploads")),
+  filename: (req, file, cb) => {
+    const sufijo = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+    cb(null, `${sufijo}${path.extname(file.originalname).toLowerCase()}`);
+  },
+});
+const subirImagen = multer({
+  storage: almacenamiento,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!tiposPermitidos.has(file.mimetype)) return cb(new Error("TIPO_NO_PERMITIDO"));
+    cb(null, true);
+  },
+}).single("imagen");</pre>
+      </div>
+      <p>El nombre de archivo nunca es el que subió el usuario — es una marca de tiempo más un número aleatorio, para que dos personas subiendo <code>portada.jpg</code> el mismo día no se pisen. <code>fileFilter</code> corta antes de escribir nada si el tipo MIME no es una imagen conocida; <code>limits.fileSize</code> corta si pesa de más. Ambos casos se capturan en <code>subirImagenConError</code> y se muestran como <code>mensaje-error</code> en el propio formulario, en vez de tirar la app con un error 500.</p>
+
+      <h3>Por qué la carpeta no está fija en el código</h3>
+      <p>La primera versión guardaba en <code>public/uploads/</code> a secas. El problema: en Railway el disco normal se borra en cada redeploy. La solución fue subir la responsabilidad un nivel — <code>server.js</code> resuelve la carpeta una sola vez a partir de <code>UPLOADS_DIR</code> y la deja colgada del objeto <code>app</code>, para que cualquier ruta la lea sin importar y sin repetir el cálculo:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>server.js</div>
+        <pre>const carpetaUploads = process.env.UPLOADS_DIR
+  ? path.resolve(process.env.UPLOADS_DIR)
+  : path.join(__dirname, "public", "uploads");
+fs.mkdirSync(carpetaUploads, { recursive: true });
+app.set("carpetaUploads", carpetaUploads);
+app.use("/uploads", express.static(carpetaUploads));</pre>
+      </div>
+      <p>En tu ordenador, sin configurar nada, sigue siendo <code>public/uploads/</code>. En Railway, <code>UPLOADS_DIR=/app/data/uploads</code> apunta dentro del volumen persistente — el mismo disco donde ya vive <code>blog.db</code> — así que sobrevive a los redespliegues igual que la base de datos.</p>
+    </section>
+
+    <section id="comentarios">
+      <div class="section-head"><span class="section-num">09</span><h2>Comentarios y moderación</h2></div>
+      <p class="lead-in">Cualquiera puede comentar sin cuenta; solo el admin puede borrar. La moderación es deliberadamente simple: no hay estado "pendiente de aprobar", un comentario aparece al instante y el admin lo revisa después.</p>
+      <div class="route-group">
+        <div class="route"><span class="method get">GET</span><code>/admin/comentarios</code><span class="desc">todos los comentarios, más recientes primero</span></div>
+        <div class="route"><span class="method post">POST</span><code>/admin/comentarios/:id/borrar</code><span class="desc">borra uno</span></div>
+      </div>
+      <p>El listado hace un <code>JOIN</code> con <code>posts</code> solo para poder mostrar el título del artículo junto a cada comentario, sin que el admin tenga que adivinar de qué post viene:</p>
+      <div class="file">
+        <div class="file-tab"><span class="dots"><span></span><span></span><span></span></span>routes/admin.js</div>
+        <pre>SELECT comentarios.*, posts.titulo AS post_titulo
+FROM comentarios
+JOIN posts ON comentarios.post_id = posts.id
+ORDER BY comentarios.fecha_creacion DESC</pre>
+      </div>
+    </section>
+
+    <section id="seo">
+      <div class="section-head"><span class="section-num">10</span><h2>SEO</h2></div>
+      <p class="lead-in"><code>routes/seo.js</code> genera dos archivos que normalmente serían estáticos, pero aquí se calculan en cada petición para que la URL nunca esté mal escrita.</p>
+      <div class="route-group">
+        <div class="route"><span class="method get">GET</span><code>/robots.txt</code><span class="desc">permite todo salvo <code>/admin</code>, apunta al sitemap</span></div>
+        <div class="route"><span class="method get">GET</span><code>/sitemap.xml</code><span class="desc">una URL por artículo, generada desde la tabla <code>posts</code></span></div>
+      </div>
+      <p>Como el sitemap consulta la base de datos en cada petición en vez de ser un archivo fijo, un artículo nuevo aparece ahí automáticamente, sin acordarte de regenerar nada. El mismo <code>urlBase</code> que ya conoces de <code>res.locals</code> es el que arma cada <code>&lt;loc&gt;</code>.</p>
+      <p>Cada vista de artículo añade también un bloque <code>&lt;script type="application/ld+json"&gt;</code> (datos estructurados <code>Article</code> de schema.org) y las etiquetas Open Graph desde <code>header.ejs</code>, para que un enlace compartido en redes muestre título, resumen e imagen en vez de una URL pelada.</p>
+    </section>
+
+    <section id="seguridad">
+      <div class="section-head"><span class="section-num">11</span><h2>Seguridad — lo que ya está y lo que falta</h2></div>
+      <table class="schema">
+        <tr><th>Cubierto</th><th>Cómo</th></tr>
+        <tr><td>Contraseñas</td><td>hasheadas con <code>bcryptjs</code>, nunca en texto plano</td></tr>
+        <tr><td>Inyección SQL</td><td>siempre <code>?</code> + parámetros, nunca texto concatenado al SQL</td></tr>
+        <tr><td>XSS en comentarios</td><td>escapado por defecto con <code>&lt;%= %&gt;</code> — ver sección 03</td></tr>
+        <tr><td>Rutas de admin</td><td>ocultas del público y protegidas por <code>requiereLogin</code></td></tr>
+        <tr><td>Archivos subidos</td><td>tipo MIME y tamaño validados antes de escribir a disco</td></tr>
+      </table>
+      <div class="note warn">
+        <div>
+          <b>No implementado todavía</b>
+          No hay protección CSRF en los formularios (un sitio malicioso podría, en teoría, enviar un POST a <code>/admin/posts/:id/borrar</code> si el admin tiene sesión abierta en otra pestaña). Tampoco hay límite de intentos de login. Para un blog personal con un único usuario admin el riesgo es bajo, pero es lo primero que añadiría si esto creciera.
+        </div>
+      </div>
+    </section>
+
+    <section id="entorno">
+      <div class="section-head"><span class="section-num">12</span><h2>Variables de entorno</h2></div>
+      <p class="lead-in">Todas se leen con <code>process.env.NOMBRE || valorPorDefecto</code>, así que la app arranca sin configurar nada — pero en producción quieres definir las tuyas.</p>
+      <table class="schema">
+        <tr><th>Variable</th><th>Para qué</th></tr>
+        <tr><td class="col-name">DB_PATH</td><td>ruta de <code>blog.db</code></td></tr>
+        <tr><td class="col-name">UPLOADS_DIR</td><td>carpeta de imágenes subidas</td></tr>
+        <tr><td class="col-name">ADMIN_EMAIL / ADMIN_PASSWORD</td><td>credenciales del único usuario</td></tr>
+        <tr><td class="col-name">SESSION_SECRET</td><td>frase para firmar la cookie de sesión</td></tr>
+        <tr><td class="col-name">PORT</td><td>puerto del servidor</td></tr>
+      </table>
+      <p>En local, <code>dotenv</code> las carga desde tu archivo <code>.env</code> (que nunca se sube a git). En Railway no hay <code>.env</code> en absoluto — esas mismas variables se definen directamente en el dashboard de la plataforma, y Railway las inyecta en <code>process.env</code> antes de arrancar tu proceso.</p>
+    </section>
+
+    <section id="despliegue">
+      <div class="section-head"><span class="section-num">13</span><h2>Despliegue en Railway</h2></div>
+      <p class="lead-in">Railway está conectado a <code>github.com/gonzalordea/blog-web</code>. Cada <code>git push</code> a <code>main</code> dispara un build y un redeploy automáticos — no hay un paso manual de "subir a producción".</p>
+      <div class="flow-grid">
+        <div class="flow-card"><div class="n">git</div><h4>push a main</h4><p>tu ordenador → GitHub</p></div>
+        <div class="flow-card"><div class="n">webhook</div><h4>Railway detecta el push</h4><p>GitHub avisa a Railway</p></div>
+        <div class="flow-card"><div class="n">build</div><h4>npm install</h4><p>reconstruye la imagen</p></div>
+        <div class="flow-card"><div class="n">deploy</div><h4>reinicia el proceso</h4><p>con las variables definidas ahí</p></div>
+      </div>
+      <p>El sistema de archivos de un contenedor de Railway se descarta en cada redeploy, salvo la ruta que hayas montado como <strong>volumen persistente</strong> — en este proyecto, <code>/app/data</code>. Por eso <code>DB_PATH</code> y <code>UPLOADS_DIR</code> apuntan los dos ahí dentro: es lo único que sobrevive de un deploy al siguiente.</p>
+    </section>
+
+    <section id="siguientes">
+      <div class="section-head"><span class="section-num">14</span><h2>Qué falta</h2></div>
+      <p class="lead-in">De lo que ya se habló y todavía no se construyó:</p>
+      <ul>
+        <li>Comentarios pendientes de aprobación, en vez de publicarse al instante.</li>
+        <li>Protección CSRF en los formularios del admin (ver sección 11).</li>
+        <li>Monetización: Google AdSense o enlaces de afiliado, una vez haya tráfico.</li>
+      </ul>
+    </section>
+
+  </main>
+
+  <footer class="doc-foot">
+    <p>Generado a partir del código de <code>blog-web</code> en la sesión donde se añadieron imágenes, comentarios, variables de entorno y el despliegue en Railway. Si el código cambia, este documento puede quedarse desactualizado — el código siempre es la fuente de verdad.</p>
+  </footer>
+</div>

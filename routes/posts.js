@@ -19,7 +19,7 @@ router.get("/", (req, res) => {
     FROM posts
     LEFT JOIN categorias ON posts.categoria_id = categorias.id
   `;
-  const condiciones = [];
+  const condiciones = ["posts.estado = 'publicado'"];
   const parametros = [];
 
   if (categoriaId) {
@@ -33,9 +33,7 @@ router.get("/", (req, res) => {
     parametros.push(comodin, comodin, comodin);
   }
 
-  if (condiciones.length > 0) {
-    sql += " WHERE " + condiciones.join(" AND ");
-  }
+  sql += " WHERE " + condiciones.join(" AND ");
 
   sql += " ORDER BY posts.fecha_creacion DESC";
 
@@ -57,7 +55,7 @@ router.get("/post/:id", (req, res) => {
       `SELECT posts.*, categorias.nombre AS categoria_nombre
        FROM posts
        LEFT JOIN categorias ON posts.categoria_id = categorias.id
-       WHERE posts.id = ?`
+       WHERE posts.id = ? AND posts.estado = 'publicado'`
     )
     .get(req.params.id);
 
@@ -75,7 +73,7 @@ router.get("/post/:id", (req, res) => {
 // POST /post/:id/comentarios -> Añadir un comentario a un artículo. Público,
 // no requiere haber iniciado sesión (cualquier lector puede comentar).
 router.post("/post/:id/comentarios", (req, res) => {
-  const post = db.prepare("SELECT id FROM posts WHERE id = ?").get(req.params.id);
+  const post = db.prepare("SELECT id FROM posts WHERE id = ? AND estado = 'publicado'").get(req.params.id);
   if (!post) {
     return res.status(404).send("Artículo no encontrado");
   }
