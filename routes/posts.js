@@ -47,19 +47,19 @@ function obtenerDatosBarraLateral(idActual) {
   return { categorias, ultimosPosts };
 }
 
-// GET / -> Página de inicio con todos los artículos, del más reciente al más antiguo
-// Admite un filtro opcional por categoría: /?categoria=2
+// Cuantos artículos se muestran por página en la portada. Con pocos
+// artículos no se nota, pero evita que el listado se vuelva interminable
+// segun el blog vaya creciendo.
+const POSTS_POR_PAGINA = 6;
+
+// GET / -> Página de inicio con los artículos, del más reciente al más
+// antiguo, paginada. Admite un filtro opcional por categoría
+// (/?categoria=2), busqueda (/?q=git) y pagina (/?pagina=2), combinables.
 router.get("/", (req, res) => {
   const categoriaId = req.query.categoria;
   const busqueda = (req.query.q || "").trim();
+  const paginaActual = Math.max(1, parseInt(req.query.pagina, 10) || 1);
 
-  // "LEFT JOIN" trae el nombre de la categoría junto a cada post en la misma
-  // consulta, en vez de tener que hacer una consulta aparte por cada post.
-  let sql = `
-    SELECT posts.*, categorias.nombre AS categoria_nombre
-    FROM posts
-    LEFT JOIN categorias ON posts.categoria_id = categorias.id
-  `;
   const condiciones = ["posts.estado = 'publicado'"];
   const parametros = [];
 
@@ -74,19 +74,60 @@ router.get("/", (req, res) => {
     parametros.push(comodin, comodin, comodin);
   }
 
-  sql += " WHERE " + condiciones.join(" AND ");
+  const whereSql = " WHERE " + condiciones.join(" AND ");
 
-  sql += " ORDER BY posts.fecha_creacion DESC";
+  const totalPosts = db
+    .prepare(`SELECT COUNT(*) AS total FROM posts${whereSql}`)
+    .get(...parametros).total;
+  const totalPaginas = Math.max(1, Math.ceil(totalPosts / POSTS_POR_PAGINA));
+  const paginaValida = Math.min(paginaActual, totalPaginas);
 
-  const posts = db.prepare(sql).all(...parametros);
+  // "LEFT JOIN" trae el nombre de la categoría junto a cada post en la misma
+  // consulta, en vez de tener que hacer una consulta aparte por cada post.
+  const sql = `
+    SELECT posts.*, categorias.nombre AS categoria_nombre
+    FROM posts
+    LEFT JOIN categorias ON posts.categoria_id = categorias.id
+    ${whereSql}
+    ORDER BY posts.fecha_creacion DESC
+    LIMIT ? OFFSET ?
+  `;
+  const posts = db
+    .prepare(sql)
+    .all(...parametros, POSTS_POR_PAGINA, (paginaValida - 1) * POSTS_POR_PAGINA);
   const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
+
+  // Construye la URL de otra pagina conservando el filtro de categoria y/o
+  // busqueda que ya estuviera activo.
+  function urlPagina(pagina) {
+    const params = new URLSearchParams();
+    if (categoriaId) params.set("categoria", categoriaId);
+    if (busqueda) params.set("q", busqueda);
+    if (pagina > 1) params.set("pagina", pagina);
+    const qs = params.toString();
+    return qs ? `/?${qs}` : "/";
+  }
 
   res.render("index", {
     posts,
     categorias,
     categoriaSeleccionada: categoriaId ? Number(categoriaId) : null,
     busqueda,
+    paginaActual: paginaValida,
+    totalPaginas,
+    urlPaginaAnterior: paginaValida > 1 ? urlPagina(paginaValida - 1) : null,
+    urlPaginaSiguiente: paginaValida < totalPaginas ? urlPagina(paginaValida + 1) : null,
   });
+});
+
+// GET /sobre -> Pagina "Sobre este blog"
+router.get("/sobre", (req, res) => {
+  const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
+  const totalPublicados = db
+    .prepare("SELECT COUNT(*) AS total FROM posts WHERE estado = 'publicado'")
+    .get().total;
+
+  res.render("sobre", { categorias, totalPublicados });
 });
 
 // GET /post/:id -> Página de detalle de un artículo concreto
@@ -101,7 +142,7 @@ router.get("/post/:id", (req, res) => {
     .get(req.params.id);
 
   if (!post) {
-    return res.status(404).send("Artículo no encontrado");
+    return res.status(404).render("404");
   }
 
   // Contador de visitas: se suma 1 en cada carga de la pagina publica.
@@ -128,7 +169,7 @@ router.get("/post/:id", (req, res) => {
 router.post("/post/:id/comentarios", (req, res) => {
   const post = db.prepare("SELECT id FROM posts WHERE id = ? AND estado = 'publicado'").get(req.params.id);
   if (!post) {
-    return res.status(404).send("Artículo no encontrado");
+    return res.status(404).render("404");
   }
 
   const nombre = (req.body.nombre || "").trim().slice(0, 80);

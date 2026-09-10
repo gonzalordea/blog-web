@@ -91,6 +91,12 @@ app.use("/", seoRoutes);
 app.use("/", postsRoutes);
 app.use("/admin", adminRoutes);
 
+// Cualquier ruta que no haya coincidido con nada de arriba: pagina 404 con
+// la identidad del blog, en vez del mensaje generico de Express.
+app.use((req, res) => {
+  res.status(404).render("404");
+});
+
 // ---------------------------------------------------------------------
 // Arranque del servidor
 // ---------------------------------------------------------------------

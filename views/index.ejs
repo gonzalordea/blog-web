@@ -69,6 +69,22 @@
   <% }); %>
 </section>
 
+<% if (totalPaginas > 1) { %>
+  <nav class="paginacion" aria-label="Paginacion">
+    <% if (urlPaginaAnterior) { %>
+      <a href="<%= urlPaginaAnterior %>" class="boton boton-secundario">&larr; Anteriores</a>
+    <% } else { %>
+      <span></span>
+    <% } %>
+    <span class="paginacion-actual">Pagina <%= paginaActual %> de <%= totalPaginas %></span>
+    <% if (urlPaginaSiguiente) { %>
+      <a href="<%= urlPaginaSiguiente %>" class="boton boton-secundario">Siguientes &rarr;</a>
+    <% } else { %>
+      <span></span>
+    <% } %>
+  </nav>
+<% } %>
+
 </div>
 
 <aside class="barra-lateral">

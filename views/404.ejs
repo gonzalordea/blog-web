@@ -1,0 +1,16 @@
+<%- include('partials/header', {
+  metaTitulo: "Pagina no encontrada — Blog Dev",
+  metaNoIndex: true
+}) %>
+
+<section class="pagina-error">
+  <p class="error-codigo">404</p>
+  <h1>Esta pagina no existe</h1>
+  <p>El enlace puede estar roto, o el articulo puede haberse movido o borrado.</p>
+  <div class="error-acciones">
+    <a href="/" class="boton">Volver al inicio</a>
+    <a href="/sobre" class="boton boton-secundario">Sobre este blog</a>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

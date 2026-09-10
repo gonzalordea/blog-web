@@ -1,0 +1,32 @@
+<%- include('partials/header', {
+  metaTitulo: "Sobre este blog — Blog Dev",
+  metaDescripcion: "Que es Blog Dev, para quien es y que puedes encontrar aqui.",
+  metaCanonica: "/sobre"
+}) %>
+
+<article class="post-detalle">
+  <h1>Sobre este blog</h1>
+
+  <div class="post-detalle-contenido">
+    <p>Blog Dev es un espacio de notas y recursos sobre desarrollo web: tutoriales para quien esta empezando a programar, herramientas utiles y opinion sobre lo que va pasando en el mundo de la programacion.</p>
+
+    <p>Nace como un proyecto de aprendizaje: cada articulo se escribe intentando explicar bien lo que a nosotros nos hubiera gustado tener claro al empezar. Por eso los tutoriales priorizan el "por que" ademas del "como", y por eso no vas a encontrar aqui relleno solo para llegar a un numero de palabras.</p>
+
+    <% if (totalPublicados > 0) { %>
+      <p>De momento hay <%= totalPublicados %> articulo<%= totalPublicados === 1 ? "" : "s" %> publicado<%= totalPublicados === 1 ? "" : "s" %>, y la idea es seguir sumando poco a poco, sin prisa pero sin pausa.</p>
+    <% } %>
+
+    <% if (categorias.length > 0) { %>
+      <h2>Categorias</h2>
+      <ul>
+        <% categorias.forEach(function(categoria) { %>
+          <li><a href="/?categoria=<%= categoria.id %>"><%= categoria.nombre %></a></li>
+        <% }); %>
+      </ul>
+    <% } %>
+
+    <p>Si prefieres seguir el blog sin depender de redes sociales, aqui tienes el <a href="/rss.xml">feed RSS</a>.</p>
+  </div>
+</article>
+
+<%- include('partials/footer') %>

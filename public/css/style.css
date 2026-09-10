@@ -423,6 +423,26 @@ body {
   border-bottom-color: var(--acento);
 }
 
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+.paginacion .boton {
+  margin-top: 0;
+}
+
+.paginacion-actual {
+  color: var(--tinta-tenue);
+  font-size: 0.9rem;
+  text-align: center;
+  flex: 1;
+}
+
 .vacio {
   color: var(--tinta-tenue);
   padding: 2rem 0;
@@ -439,6 +459,30 @@ body {
 
 .volver:hover {
   color: var(--acento);
+}
+
+/* Migas de pan */
+.migas {
+  margin-bottom: 1.2rem;
+  font-size: 0.88rem;
+  color: var(--tinta-tenue);
+}
+
+.migas a {
+  color: var(--tinta-tenue);
+  text-decoration: none;
+}
+
+.migas a:hover {
+  color: var(--acento);
+}
+
+.migas-sep {
+  margin: 0 0.4rem;
+}
+
+.migas-actual {
+  color: var(--tinta);
 }
 
 .boton-compartir {
@@ -936,6 +980,44 @@ body {
 
 .boton-arriba[hidden] {
   display: none;
+}
+
+/* Pagina de error 404 */
+.pagina-error {
+  text-align: center;
+  padding: 3rem 1rem 2rem;
+}
+
+.error-codigo {
+  font-family: var(--fuente-titular);
+  font-style: italic;
+  font-size: 5rem;
+  margin: 0;
+  color: var(--acento);
+  opacity: 0.35;
+  line-height: 1;
+}
+
+.pagina-error h1 {
+  font-family: var(--fuente-titular);
+  font-size: 1.7rem;
+  margin: 0.5rem 0 0.6rem;
+}
+
+.pagina-error p {
+  color: var(--tinta-tenue);
+}
+
+.error-acciones {
+  display: flex;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.error-acciones .boton {
+  margin-top: 0;
 }
 
 /* Pie de página */
