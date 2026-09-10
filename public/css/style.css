@@ -775,6 +775,44 @@ body {
   margin: 0;
 }
 
+.stats-resumen {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.6rem;
+}
+
+.stat-tarjeta {
+  flex: 1 1 140px;
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  padding: 1rem 1.2rem;
+}
+
+.stat-tarjeta--ancha {
+  flex: 2 1 260px;
+}
+
+.stat-numero {
+  margin: 0;
+  font-family: var(--fuente-titular);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.stat-etiqueta {
+  margin: 0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--tinta-tenue);
+}
+
+.stat-destacado {
+  margin: 0.3rem 0 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
 .tabla-admin {
   width: 100%;
   border-collapse: collapse;

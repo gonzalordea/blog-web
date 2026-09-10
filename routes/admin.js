@@ -121,7 +121,24 @@ router.get("/dashboard", requiereLogin, (req, res) => {
     )
     .all();
 
-  res.render("admin/dashboard", { posts });
+  // Resumen sencillo a partir de los datos que ya tenemos (sin depender de
+  // ningun servicio externo de analitica): totales y el articulo mas leido.
+  const totalVisitas = posts.reduce((suma, post) => suma + post.visitas, 0);
+  const publicados = posts.filter((post) => post.estado === "publicado").length;
+  const masVisitado = posts.reduce(
+    (actual, post) => (!actual || post.visitas > actual.visitas ? post : actual),
+    null
+  );
+
+  res.render("admin/dashboard", {
+    posts,
+    resumen: {
+      totalVisitas,
+      publicados,
+      borradores: posts.length - publicados,
+      masVisitado,
+    },
+  });
 });
 
 // ---------------------------------------------------------------------

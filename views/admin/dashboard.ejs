@@ -12,6 +12,27 @@
 
   <% if (posts.length === 0) { %>
     <p class="vacio">No hay artículos todavía. Crea el primero.</p>
+  <% } else { %>
+    <div class="stats-resumen">
+      <div class="stat-tarjeta">
+        <p class="stat-numero"><%= resumen.totalVisitas %></p>
+        <p class="stat-etiqueta">Visitas totales</p>
+      </div>
+      <div class="stat-tarjeta">
+        <p class="stat-numero"><%= resumen.publicados %></p>
+        <p class="stat-etiqueta">Publicados</p>
+      </div>
+      <div class="stat-tarjeta">
+        <p class="stat-numero"><%= resumen.borradores %></p>
+        <p class="stat-etiqueta">Borradores</p>
+      </div>
+      <% if (resumen.masVisitado && resumen.masVisitado.visitas > 0) { %>
+        <div class="stat-tarjeta stat-tarjeta--ancha">
+          <p class="stat-etiqueta">Artículo más visitado</p>
+          <p class="stat-destacado"><%= resumen.masVisitado.titulo %> (<%= resumen.masVisitado.visitas %>)</p>
+        </div>
+      <% } %>
+    </div>
   <% } %>
 
   <table class="tabla-admin">
