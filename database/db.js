@@ -8,6 +8,7 @@
 const { DatabaseSync } = require("node:sqlite");
 const path = require("path");
 const bcrypt = require("bcryptjs");
+const { slugify } = require("../utils/slugify");
 
 // El archivo blog.db se guarda, por defecto, dentro de esta misma carpeta
 // (así funciona igual que hasta ahora en tu ordenador). En producción
@@ -122,15 +123,73 @@ if (!tieneFechaActualizacion) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir la columna destacado a "posts" si todavía no existe
+// ---------------------------------------------------------------------
+// Solo un articulo puede estar destacado a la vez (se muestra en un hueco
+// especial en la portada). Por defecto ninguno lo esta.
+
+const tieneDestacado = columnasPosts.some((columna) => columna.name === "destacado");
+
+if (!tieneDestacado) {
+  db.exec("ALTER TABLE posts ADD COLUMN destacado INTEGER NOT NULL DEFAULT 0");
+  console.log("Migración aplicada: columna destacado añadida a posts");
+}
+
+// ---------------------------------------------------------------------
+// Migración: añadir la columna slug a "categorias" si todavía no existe
+// ---------------------------------------------------------------------
+// El slug es la version "amigable" del nombre de la categoria para usar en
+// la URL (ej. "Cursos" -> "cursos"). No se puede exigir UNIQUE al añadir la
+// columna con datos ya existentes, asi que la unicidad se comprueba a mano,
+// tanto aqui (para las categorias que ya existian) como al crear una
+// categoria nueva desde el panel admin.
+
+const columnasCategorias = db.prepare("PRAGMA table_info(categorias)").all();
+const tieneSlug = columnasCategorias.some((columna) => columna.name === "slug");
+
+if (!tieneSlug) {
+  db.exec("ALTER TABLE categorias ADD COLUMN slug TEXT");
+  console.log("Migración aplicada: columna slug añadida a categorias");
+}
+
+const categoriasSinSlug = db
+  .prepare("SELECT id, nombre FROM categorias WHERE slug IS NULL OR slug = ''")
+  .all();
+
+if (categoriasSinSlug.length > 0) {
+  const actualizarSlug = db.prepare("UPDATE categorias SET slug = ? WHERE id = ?");
+  const slugsExistentes = new Set(
+    db
+      .prepare("SELECT slug FROM categorias WHERE slug IS NOT NULL AND slug != ''")
+      .all()
+      .map((categoria) => categoria.slug)
+  );
+
+  categoriasSinSlug.forEach((categoria) => {
+    const base = slugify(categoria.nombre) || "categoria";
+    let slugFinal = base;
+    let contador = 2;
+    while (slugsExistentes.has(slugFinal)) {
+      slugFinal = `${base}-${contador}`;
+      contador += 1;
+    }
+    slugsExistentes.add(slugFinal);
+    actualizarSlug.run(slugFinal, categoria.id);
+  });
+
+  console.log(`Slugs generados para ${categoriasSinSlug.length} categoría(s) existente(s)`);
+}
+
+// ---------------------------------------------------------------------
 // Categorías de ejemplo (solo se crean si la tabla está vacía)
 // ---------------------------------------------------------------------
 
 const totalCategorias = db.prepare("SELECT COUNT(*) AS total FROM categorias").get().total;
 
 if (totalCategorias === 0) {
-  const insertarCategoria = db.prepare("INSERT INTO categorias (nombre) VALUES (?)");
+  const insertarCategoria = db.prepare("INSERT INTO categorias (nombre, slug) VALUES (?, ?)");
   ["Cursos", "Herramientas", "Recursos", "Opinión"].forEach((nombre) => {
-    insertarCategoria.run(nombre);
+    insertarCategoria.run(nombre, slugify(nombre));
   });
   console.log("Categorías de ejemplo creadas");
 }

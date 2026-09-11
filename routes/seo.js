@@ -30,9 +30,22 @@ router.get("/sitemap.xml", (req, res) => {
   const posts = db
     .prepare("SELECT id, fecha_creacion FROM posts WHERE estado = 'publicado' ORDER BY fecha_creacion DESC")
     .all();
+  // Solo se listan categorias que tengan al menos un articulo publicado:
+  // una pagina de categoria vacia no aporta nada a un rastreador.
+  const categorias = db
+    .prepare(
+      `SELECT DISTINCT categorias.slug AS slug
+       FROM categorias
+       JOIN posts ON posts.categoria_id = categorias.id
+       WHERE posts.estado = 'publicado' AND categorias.slug IS NOT NULL`
+    )
+    .all();
 
   const urls = [
     `<url><loc>${urlBase}/</loc><changefreq>daily</changefreq></url>`,
+    ...categorias.map(
+      (categoria) => `<url><loc>${urlBase}/categoria/${categoria.slug}</loc><changefreq>weekly</changefreq></url>`
+    ),
     ...posts.map((post) => {
       const fecha = post.fecha_creacion.slice(0, 10); // "YYYY-MM-DD"
       return `<url><loc>${urlBase}/post/${post.id}</loc><lastmod>${fecha}</lastmod><changefreq>monthly</changefreq></url>`;

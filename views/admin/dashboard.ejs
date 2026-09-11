@@ -49,7 +49,12 @@
     <tbody>
       <% posts.forEach(function(post) { %>
         <tr>
-          <td><%= post.titulo %></td>
+          <td>
+            <%= post.titulo %>
+            <% if (post.destacado) { %>
+              <span class="etiqueta-destacado">Destacado</span>
+            <% } %>
+          </td>
           <td>
             <span class="etiqueta-estado etiqueta-estado--<%= post.estado %>">
               <%= post.estado === "publicado" ? "Publicado" : "Borrador" %>
@@ -63,6 +68,9 @@
             <a href="/admin/posts/<%= post.id %>/editar">Editar</a>
             <form action="/admin/posts/<%= post.id %>/estado" method="POST" class="form-estado">
               <button type="submit"><%= post.estado === "publicado" ? "Pasar a borrador" : "Publicar" %></button>
+            </form>
+            <form action="/admin/posts/<%= post.id %>/destacar" method="POST" class="form-destacar">
+              <button type="submit"><%= post.destacado ? "Quitar destacado" : "Destacar" %></button>
             </form>
             <form action="/admin/posts/<%= post.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Seguro que quieres borrar este artículo?');">
               <button type="submit">Borrar</button>

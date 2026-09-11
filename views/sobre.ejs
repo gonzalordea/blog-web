@@ -20,7 +20,7 @@
       <h2>Categorias</h2>
       <ul>
         <% categorias.forEach(function(categoria) { %>
-          <li><a href="/?categoria=<%= categoria.id %>"><%= categoria.nombre %></a></li>
+          <li><a href="/categoria/<%= categoria.slug %>"><%= categoria.nombre %></a></li>
         <% }); %>
       </ul>
     <% } %>

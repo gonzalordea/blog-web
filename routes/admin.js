@@ -9,6 +9,7 @@ const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
 const db = require("../database/db");
+const { slugify } = require("../utils/slugify");
 
 // ---------------------------------------------------------------------
 // Middleware de protección: si no hay sesión iniciada, redirige al login
@@ -212,6 +213,27 @@ router.post("/posts/:id/estado", requiereLogin, (req, res) => {
 });
 
 // ---------------------------------------------------------------------
+// DESTACAR / QUITAR DESTACADO (solo un articulo destacado a la vez)
+// ---------------------------------------------------------------------
+router.post("/posts/:id/destacar", requiereLogin, (req, res) => {
+  const post = db.prepare("SELECT destacado FROM posts WHERE id = ?").get(req.params.id);
+  if (!post) {
+    return res.status(404).send("Artículo no encontrado");
+  }
+
+  if (post.destacado) {
+    db.prepare("UPDATE posts SET destacado = 0 WHERE id = ?").run(req.params.id);
+  } else {
+    // Antes de destacar este, se quita el destacado de cualquier otro:
+    // solo puede haber uno a la vez.
+    db.prepare("UPDATE posts SET destacado = 0 WHERE destacado = 1").run();
+    db.prepare("UPDATE posts SET destacado = 1 WHERE id = ?").run(req.params.id);
+  }
+
+  res.redirect("/admin/dashboard");
+});
+
+// ---------------------------------------------------------------------
 // BORRAR POST
 // ---------------------------------------------------------------------
 router.post("/posts/:id/borrar", requiereLogin, (req, res) => {
@@ -232,9 +254,25 @@ router.get("/categorias", requiereLogin, (req, res) => {
 
 router.post("/categorias", requiereLogin, (req, res) => {
   const { nombre } = req.body;
+  const nombreLimpio = (nombre || "").trim();
 
   try {
-    db.prepare("INSERT INTO categorias (nombre) VALUES (?)").run(nombre.trim());
+    // El slug se genera a partir del nombre y se comprueba a mano que no
+    // coincida con uno ya existente (añadiendo -2, -3... si hiciera falta),
+    // ya que la columna slug no tiene una restriccion UNIQUE en la base de
+    // datos (se añadio con ALTER TABLE despues de crear la tabla).
+    const base = slugify(nombreLimpio) || "categoria";
+    const slugsExistentes = new Set(
+      db.prepare("SELECT slug FROM categorias").all().map((categoria) => categoria.slug)
+    );
+    let slug = base;
+    let contador = 2;
+    while (slugsExistentes.has(slug)) {
+      slug = `${base}-${contador}`;
+      contador += 1;
+    }
+
+    db.prepare("INSERT INTO categorias (nombre, slug) VALUES (?, ?)").run(nombreLimpio, slug);
     res.redirect("/admin/categorias");
   } catch (error) {
     // Salta aquí, por ejemplo, si ya existe una categoría con ese nombre

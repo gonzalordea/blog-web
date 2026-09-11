@@ -1,27 +1,57 @@
 <%
+  const hayCategoria = typeof categoriaActual !== "undefined" && categoriaActual;
   const tituloIndex = (typeof busqueda !== "undefined" && busqueda)
     ? `Resultados para "${busqueda}" — Blog Dev`
-    : "Blog Dev — Notas y recursos de desarrollo web";
+    : hayCategoria
+      ? `${categoriaActual.nombre} — Blog Dev`
+      : "Blog Dev — Notas y recursos de desarrollo web";
+  const descripcionIndex = hayCategoria
+    ? `Artículos de la categoría ${categoriaActual.nombre} en Blog Dev: guías prácticas, opiniones y recomendaciones sobre desarrollo web.`
+    : "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web: guías prácticas, opiniones y recomendaciones.";
+  const canonicaIndex = hayCategoria ? `/categoria/${categoriaActual.slug}` : "/";
 %>
 <%- include('partials/header', {
   metaTitulo: tituloIndex,
-  metaDescripcion: "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web: guías prácticas, opiniones y recomendaciones.",
-  metaCanonica: "/",
+  metaDescripcion: descripcionIndex,
+  metaCanonica: canonicaIndex,
   conBarraLateral: true
 }) %>
 
 <div class="col-principal">
 
 <section class="hero">
-  <p class="hero-etiqueta">Notas y recursos de desarrollo web</p>
-  <h1>Aprendiendo a construir cosas, un artículo a la vez.</h1>
+  <% if (hayCategoria) { %>
+    <p class="hero-etiqueta">Categoría</p>
+    <h1><%= categoriaActual.nombre %></h1>
+  <% } else { %>
+    <p class="hero-etiqueta">Notas y recursos de desarrollo web</p>
+    <h1>Aprendiendo a construir cosas, un artículo a la vez.</h1>
+  <% } %>
 </section>
+
+<% if (typeof destacado !== "undefined" && destacado) { %>
+  <a href="/post/<%= destacado.id %>" class="destacado-post">
+    <% if (destacado.imagen) { %>
+      <img src="<%= destacado.imagen %>" alt="<%= destacado.titulo %>" class="destacado-post-img" />
+    <% } else { %>
+      <div class="destacado-post-img fila-post-img-placeholder" aria-hidden="true">
+        <span><%= destacado.titulo.trim().charAt(0).toUpperCase() %></span>
+      </div>
+    <% } %>
+    <div class="destacado-post-contenido">
+      <p class="destacado-post-etiqueta">Artículo destacado</p>
+      <h2><%= destacado.titulo %></h2>
+      <p class="fila-post-resumen"><%= destacado.resumen %></p>
+      <span class="leer-mas">Leer artículo</span>
+    </div>
+  </a>
+<% } %>
 
 <% if (categorias.length > 0) { %>
   <nav class="tabs-categorias">
     <a href="/" class="<%= !categoriaSeleccionada ? 'tab-activa' : '' %>">Todo</a>
     <% categorias.forEach(function(categoria) { %>
-      <a href="/?categoria=<%= categoria.id %>" class="<%= categoriaSeleccionada === categoria.id ? 'tab-activa' : '' %>">
+      <a href="/categoria/<%= categoria.slug %>" class="<%= categoriaSeleccionada === categoria.id ? 'tab-activa' : '' %>">
         <%= categoria.nombre %>
       </a>
     <% }); %>
@@ -98,7 +128,7 @@
       <h2>Categorias</h2>
       <ul class="widget-lista">
         <% categorias.forEach(function(categoria) { %>
-          <li><a href="/?categoria=<%= categoria.id %>"><%= categoria.nombre %></a></li>
+          <li><a href="/categoria/<%= categoria.slug %>"><%= categoria.nombre %></a></li>
         <% }); %>
       </ul>
     </div>

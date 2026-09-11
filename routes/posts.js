@@ -53,19 +53,49 @@ function obtenerDatosBarraLateral(idActual) {
 const POSTS_POR_PAGINA = 6;
 
 // GET / -> Página de inicio con los artículos, del más reciente al más
-// antiguo, paginada. Admite un filtro opcional por categoría
-// (/?categoria=2), busqueda (/?q=git) y pagina (/?pagina=2), combinables.
+// antiguo, paginada. Admite busqueda (/?q=git) y pagina (/?pagina=2),
+// combinables. El filtro por categoría vive ahora en su propia URL
+// (/categoria/nombre-de-la-categoria): si llega un enlace antiguo con
+// ?categoria=ID, se redirige de forma permanente a la nueva URL para no
+// perder el enlace ni crear contenido duplicado de cara a los buscadores.
 router.get("/", (req, res) => {
-  const categoriaId = req.query.categoria;
+  if (req.query.categoria) {
+    const categoria = db.prepare("SELECT slug FROM categorias WHERE id = ?").get(req.query.categoria);
+    const params = new URLSearchParams();
+    if (req.query.q) params.set("q", req.query.q);
+    if (req.query.pagina) params.set("pagina", req.query.pagina);
+    const qs = params.toString();
+    const destino = categoria
+      ? `/categoria/${categoria.slug}${qs ? "?" + qs : ""}`
+      : "/";
+    return res.redirect(301, destino);
+  }
+
   const busqueda = (req.query.q || "").trim();
   const paginaActual = Math.max(1, parseInt(req.query.pagina, 10) || 1);
+
+  // El articulo destacado (si hay uno) solo se muestra en su hueco especial
+  // en la portada "limpia": primera pagina, sin busqueda activa. En el
+  // resto de casos (buscando, o en paginas siguientes) se mezcla con el
+  // resto de articulos como uno más.
+  const mostrarDestacado = !busqueda && paginaActual === 1;
+  const destacado = mostrarDestacado
+    ? db
+        .prepare(
+          `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
+           FROM posts
+           LEFT JOIN categorias ON posts.categoria_id = categorias.id
+           WHERE posts.destacado = 1 AND posts.estado = 'publicado'`
+        )
+        .get()
+    : null;
 
   const condiciones = ["posts.estado = 'publicado'"];
   const parametros = [];
 
-  if (categoriaId) {
-    condiciones.push("posts.categoria_id = ?");
-    parametros.push(categoriaId);
+  if (destacado) {
+    condiciones.push("posts.id != ?");
+    parametros.push(destacado.id);
   }
 
   if (busqueda) {
@@ -97,11 +127,10 @@ router.get("/", (req, res) => {
     .all(...parametros, POSTS_POR_PAGINA, (paginaValida - 1) * POSTS_POR_PAGINA);
   const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
 
-  // Construye la URL de otra pagina conservando el filtro de categoria y/o
-  // busqueda que ya estuviera activo.
+  // Construye la URL de otra pagina conservando la busqueda que ya
+  // estuviera activa.
   function urlPagina(pagina) {
     const params = new URLSearchParams();
-    if (categoriaId) params.set("categoria", categoriaId);
     if (busqueda) params.set("q", busqueda);
     if (pagina > 1) params.set("pagina", pagina);
     const qs = params.toString();
@@ -111,7 +140,74 @@ router.get("/", (req, res) => {
   res.render("index", {
     posts,
     categorias,
-    categoriaSeleccionada: categoriaId ? Number(categoriaId) : null,
+    categoriaSeleccionada: null,
+    categoriaActual: null,
+    destacado,
+    busqueda,
+    paginaActual: paginaValida,
+    totalPaginas,
+    urlPaginaAnterior: paginaValida > 1 ? urlPagina(paginaValida - 1) : null,
+    urlPaginaSiguiente: paginaValida < totalPaginas ? urlPagina(paginaValida + 1) : null,
+  });
+});
+
+// GET /categoria/:slug -> Listado de articulos de una categoria, con su
+// propia URL amigable (mejor para SEO que /?categoria=ID: cada categoria
+// pasa a ser una pagina indexable por su cuenta, con su propio titulo).
+router.get("/categoria/:slug", (req, res) => {
+  const categoria = db.prepare("SELECT * FROM categorias WHERE slug = ?").get(req.params.slug);
+
+  if (!categoria) {
+    return res.status(404).render("404");
+  }
+
+  const busqueda = (req.query.q || "").trim();
+  const paginaActual = Math.max(1, parseInt(req.query.pagina, 10) || 1);
+
+  const condiciones = ["posts.estado = 'publicado'", "posts.categoria_id = ?"];
+  const parametros = [categoria.id];
+
+  if (busqueda) {
+    condiciones.push("(posts.titulo LIKE ? OR posts.resumen LIKE ? OR posts.contenido LIKE ?)");
+    const comodin = `%${busqueda}%`;
+    parametros.push(comodin, comodin, comodin);
+  }
+
+  const whereSql = " WHERE " + condiciones.join(" AND ");
+
+  const totalPosts = db
+    .prepare(`SELECT COUNT(*) AS total FROM posts${whereSql}`)
+    .get(...parametros).total;
+  const totalPaginas = Math.max(1, Math.ceil(totalPosts / POSTS_POR_PAGINA));
+  const paginaValida = Math.min(paginaActual, totalPaginas);
+
+  const sql = `
+    SELECT posts.*, categorias.nombre AS categoria_nombre
+    FROM posts
+    LEFT JOIN categorias ON posts.categoria_id = categorias.id
+    ${whereSql}
+    ORDER BY posts.fecha_creacion DESC
+    LIMIT ? OFFSET ?
+  `;
+  const posts = db
+    .prepare(sql)
+    .all(...parametros, POSTS_POR_PAGINA, (paginaValida - 1) * POSTS_POR_PAGINA);
+  const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
+
+  function urlPagina(pagina) {
+    const params = new URLSearchParams();
+    if (busqueda) params.set("q", busqueda);
+    if (pagina > 1) params.set("pagina", pagina);
+    const qs = params.toString();
+    return qs ? `/categoria/${categoria.slug}?${qs}` : `/categoria/${categoria.slug}`;
+  }
+
+  res.render("index", {
+    posts,
+    categorias,
+    categoriaSeleccionada: categoria.id,
+    categoriaActual: categoria,
+    destacado: null,
     busqueda,
     paginaActual: paginaValida,
     totalPaginas,
@@ -134,7 +230,7 @@ router.get("/sobre", (req, res) => {
 router.get("/post/:id", (req, res) => {
   const post = db
     .prepare(
-      `SELECT posts.*, categorias.nombre AS categoria_nombre
+      `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
        FROM posts
        LEFT JOIN categorias ON posts.categoria_id = categorias.id
        WHERE posts.id = ? AND posts.estado = 'publicado'`
@@ -178,7 +274,7 @@ router.post("/post/:id/comentarios", (req, res) => {
   if (!nombre || !contenido) {
     const postCompleto = db
       .prepare(
-        `SELECT posts.*, categorias.nombre AS categoria_nombre
+        `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
          FROM posts
          LEFT JOIN categorias ON posts.categoria_id = categorias.id
          WHERE posts.id = ?`
