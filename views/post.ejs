@@ -1,12 +1,22 @@
 <%
   const resumenLimpio = post.resumen.replace(/\s+/g, " ").trim();
   const fechaIso = post.fecha_creacion.replace(" ", "T");
+  // fecha_actualizacion es NULL hasta que alguien edita el articulo desde el
+  // panel admin, y solo la mostramos si de verdad aporta algo (fecha distinta
+  // a la de creacion), para no decir "actualizado" en articulos que no se han
+  // tocado desde que se publicaron.
+  const fechaActualizacionIso = post.fecha_actualizacion
+    ? post.fecha_actualizacion.replace(" ", "T")
+    : null;
+  const mostrarFechaActualizacion =
+    fechaActualizacionIso && post.fecha_actualizacion.slice(0, 10) !== post.fecha_creacion.slice(0, 10);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.titulo,
     description: resumenLimpio,
     datePublished: fechaIso,
+    dateModified: fechaActualizacionIso || fechaIso,
     mainEntityOfPage: urlBase + "/post/" + post.id,
     author: { "@type": "Organization", name: "Blog Dev" },
     publisher: { "@type": "Organization", name: "Blog Dev" },
@@ -63,24 +73,34 @@
     <span class="migas-actual"><%= post.titulo %></span>
   </nav>
 
-  <button
-    type="button"
-    class="boton-compartir"
-    data-url="<%= urlBase %>/post/<%= post.id %>"
-    onclick="
-      navigator.clipboard.writeText(this.dataset.url).then(() => {
-        const textoOriginal = this.textContent;
-        this.textContent = 'Enlace copiado';
-        setTimeout(() => { this.textContent = textoOriginal; }, 2000);
-      });
-    "
-  >Copiar enlace</button>
+  <div class="acciones-articulo">
+    <button
+      type="button"
+      class="boton-compartir"
+      data-url="<%= urlBase %>/post/<%= post.id %>"
+      onclick="
+        navigator.clipboard.writeText(this.dataset.url).then(() => {
+          const textoOriginal = this.textContent;
+          this.textContent = 'Enlace copiado';
+          setTimeout(() => { this.textContent = textoOriginal; }, 2000);
+        });
+      "
+    >Copiar enlace</button>
+
+    <button type="button" id="boton-modo-lectura" class="boton-compartir">Modo lectura</button>
+  </div>
 
   <% if (post.categoria_nombre) { %>
     <p class="fila-post-meta"><%= post.categoria_nombre %></p>
   <% } %>
   <h1><%= post.titulo %></h1>
-  <p class="fecha">Publicado el <%= post.fecha_creacion %> &middot; <%= tiempoLectura %> min de lectura</p>
+  <p class="fecha">
+    Publicado el <%= post.fecha_creacion %>
+    <% if (mostrarFechaActualizacion) { %>
+      <span class="fecha-actualizado">&middot; Actualizado el <%= post.fecha_actualizacion %></span>
+    <% } %>
+    &middot; <%= tiempoLectura %> min de lectura
+  </p>
 
   <nav class="indice-articulo" id="indice-articulo" hidden>
     <p class="indice-titulo">Indice</p>
@@ -131,6 +151,42 @@
     });
 
     contenedorIndice.hidden = false;
+  })();
+</script>
+
+<script>
+  (function () {
+    // "Modo lectura": oculta cabecera, barra lateral, pie y comentarios para
+    // dejar solo el articulo. Se recuerda la preferencia entre visitas.
+    var boton = document.getElementById("boton-modo-lectura");
+    if (!boton) return;
+
+    function actualizarTexto() {
+      boton.textContent = document.body.classList.contains("modo-lectura")
+        ? "Salir del modo lectura"
+        : "Modo lectura";
+    }
+
+    try {
+      if (localStorage.getItem("modoLectura") === "activado") {
+        document.body.classList.add("modo-lectura");
+      }
+    } catch (e) {
+      // Si el navegador bloquea localStorage (modo privado, etc.), el boton
+      // sigue funcionando, solo que no recuerda la preferencia.
+    }
+    actualizarTexto();
+
+    boton.addEventListener("click", function () {
+      document.body.classList.toggle("modo-lectura");
+      actualizarTexto();
+      try {
+        localStorage.setItem(
+          "modoLectura",
+          document.body.classList.contains("modo-lectura") ? "activado" : "desactivado"
+        );
+      } catch (e) {}
+    });
   })();
 </script>
 

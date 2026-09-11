@@ -191,7 +191,7 @@ router.post("/posts/:id/editar", requiereLogin, subirImagenConError, (req, res) 
   }
 
   db.prepare(
-    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ?, estado = ? WHERE id = ?"
+    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ?, estado = ?, fecha_actualizacion = datetime('now', 'localtime') WHERE id = ?"
   ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal, req.params.id);
 
   res.redirect("/admin/dashboard");

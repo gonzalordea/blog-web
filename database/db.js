@@ -104,6 +104,24 @@ if (!tieneVisitas) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir la columna fecha_actualizacion a "posts" si no existe
+// ---------------------------------------------------------------------
+// Guarda cuándo se editó un artículo por última vez (distinto de
+// fecha_creacion, que no cambia nunca). Empieza en NULL: solo se rellena
+// la primera vez que alguien edita el artículo desde el panel admin, así
+// que en la web pública solo se muestra "Actualizado el..." en artículos
+// que de verdad se han revisado, no en todos por defecto.
+
+const tieneFechaActualizacion = columnasPosts.some(
+  (columna) => columna.name === "fecha_actualizacion"
+);
+
+if (!tieneFechaActualizacion) {
+  db.exec("ALTER TABLE posts ADD COLUMN fecha_actualizacion TEXT");
+  console.log("Migración aplicada: columna fecha_actualizacion añadida a posts");
+}
+
+// ---------------------------------------------------------------------
 // Categorías de ejemplo (solo se crean si la tabla está vacía)
 // ---------------------------------------------------------------------
 
