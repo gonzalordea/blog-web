@@ -9,6 +9,7 @@ require("dotenv").config();
 
 const express = require("express");
 const session = require("express-session");
+const FileStore = require("session-file-store")(session);
 const path = require("path");
 const fs = require("fs");
 
@@ -52,8 +53,25 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public"))); // Archivos CSS/JS
 app.use("/uploads", express.static(carpetaUploads)); // Imágenes subidas por los artículos
 
+// Las sesiones se guardan en archivos en vez de en memoria (que era el
+// comportamiento por defecto). Con sesiones en memoria, cada vez que el
+// proceso de Node se reinicia se pierden todas las sesiones activas — y
+// nodemon (usado en "npm run dev") reinicia el servidor cada vez que
+// guardas un archivo, así que tocaba volver a iniciar sesión constantemente
+// mientras se está programando. Guardándolas en disco, la sesión sobrevive
+// a esos reinicios (y también a los despliegues en Railway, si se guardan
+// en el mismo volumen persistente que la base de datos).
+const carpetaSesiones = process.env.DB_PATH
+  ? path.join(path.dirname(process.env.DB_PATH), "sessions")
+  : path.join(__dirname, "sessions");
+
 app.use(
   session({
+    store: new FileStore({
+      path: carpetaSesiones,
+      ttl: 60 * 60 * 2, // igual que cookie.maxAge, en segundos (2 horas)
+      logFn: function () {}, // sin esto, escribe un log por cada lectura/escritura de sesión
+    }),
     // En producción, define SESSION_SECRET como variable de entorno con una
     // frase larga y aleatoria. Si no existe (como en desarrollo local), se
     // usa un valor por defecto — está bien para probar, pero nunca para producción real.

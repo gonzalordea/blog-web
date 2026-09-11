@@ -84,6 +84,13 @@ function borrarImagenAnterior(req, rutaImagen) {
   });
 }
 
+// Comprueba que un color venga en formato hexadecimal valido (#rrggbb, el
+// que devuelve un <input type="color">). Si no lo es, se ignora en vez de
+// guardar cualquier cosa en la base de datos.
+function esColorHexValido(color) {
+  return typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color);
+}
+
 // ---------------------------------------------------------------------
 // LOGIN
 // ---------------------------------------------------------------------
@@ -253,8 +260,9 @@ router.get("/categorias", requiereLogin, (req, res) => {
 });
 
 router.post("/categorias", requiereLogin, (req, res) => {
-  const { nombre } = req.body;
+  const { nombre, color } = req.body;
   const nombreLimpio = (nombre || "").trim();
+  const colorFinal = esColorHexValido(color) ? color : null;
 
   try {
     // El slug se genera a partir del nombre y se comprueba a mano que no
@@ -272,7 +280,11 @@ router.post("/categorias", requiereLogin, (req, res) => {
       contador += 1;
     }
 
-    db.prepare("INSERT INTO categorias (nombre, slug) VALUES (?, ?)").run(nombreLimpio, slug);
+    db.prepare("INSERT INTO categorias (nombre, slug, color) VALUES (?, ?, ?)").run(
+      nombreLimpio,
+      slug,
+      colorFinal
+    );
     res.redirect("/admin/categorias");
   } catch (error) {
     // Salta aquí, por ejemplo, si ya existe una categoría con ese nombre
@@ -280,6 +292,14 @@ router.post("/categorias", requiereLogin, (req, res) => {
     const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
     res.render("admin/categorias", { categorias, error: "Esa categoría ya existe o el nombre no es válido" });
   }
+});
+
+router.post("/categorias/:id/color", requiereLogin, (req, res) => {
+  const { color } = req.body;
+  if (esColorHexValido(color)) {
+    db.prepare("UPDATE categorias SET color = ? WHERE id = ?").run(color, req.params.id);
+  }
+  res.redirect("/admin/categorias");
 });
 
 router.post("/categorias/:id/borrar", requiereLogin, (req, res) => {

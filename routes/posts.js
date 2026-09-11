@@ -82,7 +82,7 @@ router.get("/", (req, res) => {
   const destacado = mostrarDestacado
     ? db
         .prepare(
-          `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
+          `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
            FROM posts
            LEFT JOIN categorias ON posts.categoria_id = categorias.id
            WHERE posts.destacado = 1 AND posts.estado = 'publicado'`
@@ -115,7 +115,7 @@ router.get("/", (req, res) => {
   // "LEFT JOIN" trae el nombre de la categoría junto a cada post en la misma
   // consulta, en vez de tener que hacer una consulta aparte por cada post.
   const sql = `
-    SELECT posts.*, categorias.nombre AS categoria_nombre
+    SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.color AS categoria_color
     FROM posts
     LEFT JOIN categorias ON posts.categoria_id = categorias.id
     ${whereSql}
@@ -182,7 +182,7 @@ router.get("/categoria/:slug", (req, res) => {
   const paginaValida = Math.min(paginaActual, totalPaginas);
 
   const sql = `
-    SELECT posts.*, categorias.nombre AS categoria_nombre
+    SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.color AS categoria_color
     FROM posts
     LEFT JOIN categorias ON posts.categoria_id = categorias.id
     ${whereSql}
@@ -230,7 +230,7 @@ router.get("/sobre", (req, res) => {
 router.get("/post/:id", (req, res) => {
   const post = db
     .prepare(
-      `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
+      `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
        FROM posts
        LEFT JOIN categorias ON posts.categoria_id = categorias.id
        WHERE posts.id = ? AND posts.estado = 'publicado'`
@@ -274,7 +274,7 @@ router.post("/post/:id/comentarios", (req, res) => {
   if (!nombre || !contenido) {
     const postCompleto = db
       .prepare(
-        `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug
+        `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
          FROM posts
          LEFT JOIN categorias ON posts.categoria_id = categorias.id
          WHERE posts.id = ?`

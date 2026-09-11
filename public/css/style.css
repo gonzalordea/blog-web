@@ -118,7 +118,9 @@ body {
 }
 
 .widget-lista a:hover {
-  color: var(--acento);
+  /* Si el enlace trae su propio --color-cat (una categoria con color
+     asignado), se usa ese; si no, el acento general del sitio. */
+  color: var(--color-cat, var(--acento));
 }
 
 @media (max-width: 900px) {
@@ -370,11 +372,12 @@ body {
 
 .tabs-categorias a:hover {
   color: var(--tinta);
+  border-bottom-color: var(--color-cat, var(--acento));
 }
 
 .tabs-categorias a.tab-activa {
   color: var(--tinta);
-  border-bottom-color: var(--acento);
+  border-bottom-color: var(--color-cat, var(--acento));
   font-weight: 500;
 }
 
@@ -977,8 +980,22 @@ body.modo-lectura .post-detalle-contenido {
 }
 
 .form-borrar,
-.form-estado {
+.form-estado,
+.form-destacar {
   display: inline;
+}
+
+.form-color-categoria {
+  display: inline-flex;
+}
+
+.form-color-categoria input[type="color"] {
+  width: 36px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--borde);
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .etiqueta-estado {
@@ -1046,6 +1063,14 @@ body.modo-lectura .post-detalle-contenido {
 .formulario-inline input {
   margin-top: 0;
   flex: 1;
+}
+
+.formulario-inline input[type="color"] {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 38px;
+  padding: 2px;
+  cursor: pointer;
 }
 
 .formulario-inline button {

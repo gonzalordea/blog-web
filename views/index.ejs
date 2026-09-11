@@ -21,7 +21,7 @@
 
 <section class="hero">
   <% if (hayCategoria) { %>
-    <p class="hero-etiqueta">Categoría</p>
+    <p class="hero-etiqueta" style="<%= categoriaActual.color ? `color: ${categoriaActual.color};` : '' %>">Categoría</p>
     <h1><%= categoriaActual.nombre %></h1>
   <% } else { %>
     <p class="hero-etiqueta">Notas y recursos de desarrollo web</p>
@@ -40,6 +40,11 @@
     <% } %>
     <div class="destacado-post-contenido">
       <p class="destacado-post-etiqueta">Artículo destacado</p>
+      <% if (destacado.categoria_nombre) { %>
+        <p class="fila-post-meta" style="<%= destacado.categoria_color ? `color: ${destacado.categoria_color};` : '' %>">
+          <%= destacado.categoria_nombre %>
+        </p>
+      <% } %>
       <h2><%= destacado.titulo %></h2>
       <p class="fila-post-resumen"><%= destacado.resumen %></p>
       <span class="leer-mas">Leer artículo</span>
@@ -51,7 +56,11 @@
   <nav class="tabs-categorias">
     <a href="/" class="<%= !categoriaSeleccionada ? 'tab-activa' : '' %>">Todo</a>
     <% categorias.forEach(function(categoria) { %>
-      <a href="/categoria/<%= categoria.slug %>" class="<%= categoriaSeleccionada === categoria.id ? 'tab-activa' : '' %>">
+      <a
+        href="/categoria/<%= categoria.slug %>"
+        class="<%= categoriaSeleccionada === categoria.id ? 'tab-activa' : '' %>"
+        <% if (categoria.color) { %>style="--color-cat: <%= categoria.color %>;"<% } %>
+      >
         <%= categoria.nombre %>
       </a>
     <% }); %>
@@ -88,7 +97,7 @@
         <% } %>
       </a>
       <div class="fila-post-contenido">
-        <p class="fila-post-meta">
+        <p class="fila-post-meta" style="<%= post.categoria_color ? `color: ${post.categoria_color};` : '' %>">
           <% if (post.categoria_nombre) { %><%= post.categoria_nombre %><% } else { %>Sin categoría<% } %>
         </p>
         <h2><a href="/post/<%= post.id %>"><%= post.titulo %></a></h2>
@@ -128,7 +137,12 @@
       <h2>Categorias</h2>
       <ul class="widget-lista">
         <% categorias.forEach(function(categoria) { %>
-          <li><a href="/categoria/<%= categoria.slug %>"><%= categoria.nombre %></a></li>
+          <li>
+            <a
+              href="/categoria/<%= categoria.slug %>"
+              <% if (categoria.color) { %>style="--color-cat: <%= categoria.color %>;"<% } %>
+            ><%= categoria.nombre %></a>
+          </li>
         <% }); %>
       </ul>
     </div>

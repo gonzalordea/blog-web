@@ -181,15 +181,35 @@ if (categoriasSinSlug.length > 0) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir la columna color a "categorias" si todavía no existe
+// ---------------------------------------------------------------------
+// Color propio de cada categoria (hex, ej. "#2f5de3"), para diferenciarlas
+// visualmente en el listado, las pestañas y la barra lateral. Empieza en
+// NULL: las categorias que ya existian se quedan con el color por defecto
+// del sitio hasta que se les asigne uno desde el panel admin.
+
+const tieneColor = columnasCategorias.some((columna) => columna.name === "color");
+
+if (!tieneColor) {
+  db.exec("ALTER TABLE categorias ADD COLUMN color TEXT");
+  console.log("Migración aplicada: columna color añadida a categorias");
+}
+
+// ---------------------------------------------------------------------
 // Categorías de ejemplo (solo se crean si la tabla está vacía)
 // ---------------------------------------------------------------------
 
 const totalCategorias = db.prepare("SELECT COUNT(*) AS total FROM categorias").get().total;
 
 if (totalCategorias === 0) {
-  const insertarCategoria = db.prepare("INSERT INTO categorias (nombre, slug) VALUES (?, ?)");
-  ["Cursos", "Herramientas", "Recursos", "Opinión"].forEach((nombre) => {
-    insertarCategoria.run(nombre, slugify(nombre));
+  const insertarCategoria = db.prepare("INSERT INTO categorias (nombre, slug, color) VALUES (?, ?, ?)");
+  [
+    ["Cursos", "#2f5de3"],
+    ["Herramientas", "#1a7f4b"],
+    ["Recursos", "#d98324"],
+    ["Opinión", "#a23b72"],
+  ].forEach(([nombre, color]) => {
+    insertarCategoria.run(nombre, slugify(nombre), color);
   });
   console.log("Categorías de ejemplo creadas");
 }

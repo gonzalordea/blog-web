@@ -12,6 +12,7 @@
 
   <form action="/admin/categorias" method="POST" class="formulario formulario-inline">
     <input type="text" name="nombre" placeholder="Nombre de la nueva categoría" required />
+    <input type="color" name="color" value="#2f5de3" aria-label="Color de la categoría" title="Color de la categoría" />
     <button type="submit">Añadir</button>
   </form>
 
@@ -23,6 +24,7 @@
     <thead>
       <tr>
         <th>Nombre</th>
+        <th>Color</th>
         <th>Acciones</th>
       </tr>
     </thead>
@@ -30,6 +32,17 @@
       <% categorias.forEach(function(categoria) { %>
         <tr>
           <td><%= categoria.nombre %></td>
+          <td>
+            <form action="/admin/categorias/<%= categoria.id %>/color" method="POST" class="form-color-categoria">
+              <input
+                type="color"
+                name="color"
+                value="<%= categoria.color || '#2f5de3' %>"
+                aria-label="Color de <%= categoria.nombre %>"
+                onchange="this.form.requestSubmit()"
+              />
+            </form>
+          </td>
           <td class="acciones">
             <form action="/admin/categorias/<%= categoria.id %>/borrar" method="POST" class="form-borrar" onsubmit="return confirm('¿Borrar esta categoría? Los artículos que la tengan asignada se quedarán sin categoría.');">
               <button type="submit">Borrar</button>
