@@ -18,8 +18,8 @@
     datePublished: fechaIso,
     dateModified: fechaActualizacionIso || fechaIso,
     mainEntityOfPage: urlBase + "/post/" + post.id,
-    author: { "@type": "Organization", name: "Blog Dev" },
-    publisher: { "@type": "Organization", name: "Blog Dev" },
+    author: { "@type": "Organization", name: "Código al Día" },
+    publisher: { "@type": "Organization", name: "Código al Día" },
   };
   if (post.imagen) {
     jsonLd.image = post.imagen.startsWith("http") ? post.imagen : urlBase + post.imagen;
@@ -49,7 +49,7 @@
   };
 %>
 <%- include('partials/header', {
-  metaTitulo: post.titulo + " — Blog Dev",
+  metaTitulo: post.titulo + " — Código al Día",
   metaDescripcion: resumenLimpio,
   metaCanonica: "/post/" + post.id,
   metaImagen: post.imagen,
@@ -251,7 +251,7 @@
 
 <aside class="barra-lateral">
   <div class="widget-lateral">
-    <h2>Blog Dev</h2>
+    <h2>Código al Día</h2>
     <p>Notas y recursos sobre desarrollo web: cursos, herramientas y opiniones, pensados para quien esta aprendiendo a programar.</p>
   </div>
 

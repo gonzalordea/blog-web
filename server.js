@@ -39,6 +39,19 @@ app.set("carpetaUploads", carpetaUploads);
 // devolvería siempre "http", y las URLs canónicas/Open Graph saldrían mal.
 app.set("trust proxy", 1);
 
+// Redirige el dominio antiguo de Railway al dominio propio (codigoaldia.com),
+// para que cualquier visita o enlace antiguo a la URL de Railway acabe
+// siempre en el dominio definitivo, y para evitar contenido duplicado de
+// cara a Google (misma pagina accesible por dos URLs distintas).
+const DOMINIO_ANTIGUO = "blog-web-production-42cf.up.railway.app";
+const DOMINIO_PROPIO = "codigoaldia.com";
+app.use((req, res, next) => {
+  if (req.hostname === DOMINIO_ANTIGUO) {
+    return res.redirect(301, `https://${DOMINIO_PROPIO}${req.originalUrl}`);
+  }
+  next();
+});
+
 // ---------------------------------------------------------------------
 // Configuración del motor de plantillas (EJS)
 // ---------------------------------------------------------------------

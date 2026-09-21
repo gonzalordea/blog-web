@@ -226,6 +226,21 @@ router.get("/sobre", (req, res) => {
   res.render("sobre", { categorias, totalPublicados });
 });
 
+// GET /contacto -> Pagina de contacto
+router.get("/contacto", (req, res) => {
+  res.render("contacto");
+});
+
+// GET /privacidad -> Politica de privacidad
+router.get("/privacidad", (req, res) => {
+  res.render("privacidad");
+});
+
+// GET /cookies -> Politica de cookies
+router.get("/cookies", (req, res) => {
+  res.render("cookies");
+});
+
 // GET /post/:id -> Página de detalle de un artículo concreto
 router.get("/post/:id", (req, res) => {
   const post = db

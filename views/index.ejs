@@ -1,12 +1,12 @@
 <%
   const hayCategoria = typeof categoriaActual !== "undefined" && categoriaActual;
   const tituloIndex = (typeof busqueda !== "undefined" && busqueda)
-    ? `Resultados para "${busqueda}" — Blog Dev`
+    ? `Resultados para "${busqueda}" — Código al Día`
     : hayCategoria
-      ? `${categoriaActual.nombre} — Blog Dev`
-      : "Blog Dev — Notas y recursos de desarrollo web";
+      ? `${categoriaActual.nombre} — Código al Día`
+      : "Código al Día — Notas y recursos de desarrollo web";
   const descripcionIndex = hayCategoria
-    ? `Artículos de la categoría ${categoriaActual.nombre} en Blog Dev: guías prácticas, opiniones y recomendaciones sobre desarrollo web.`
+    ? `Artículos de la categoría ${categoriaActual.nombre} en Código al Día: guías prácticas, opiniones y recomendaciones sobre desarrollo web.`
     : "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web: guías prácticas, opiniones y recomendaciones.";
   const canonicaIndex = hayCategoria ? `/categoria/${categoriaActual.slug}` : "/";
 %>
@@ -128,7 +128,7 @@
 
 <aside class="barra-lateral">
   <div class="widget-lateral">
-    <h2>Blog Dev</h2>
+    <h2>Código al Día</h2>
     <p>Notas y recursos sobre desarrollo web: cursos, herramientas y opiniones, pensados para quien esta aprendiendo a programar.</p>
   </div>
 

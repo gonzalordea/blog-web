@@ -1151,6 +1151,20 @@ body.modo-lectura .post-detalle-contenido {
   border-top: 1px solid var(--borde);
 }
 
+.pie-legal {
+  margin-top: 0.5rem;
+}
+
+.pie-legal a {
+  color: var(--tinta-tenue);
+  text-decoration: none;
+}
+
+.pie-legal a:hover {
+  color: var(--acento);
+  text-decoration: underline;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .cabecera {

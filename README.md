@@ -1,4 +1,4 @@
-# Blog Dev — Proyecto de aprendizaje
+# Código al Día — Proyecto de aprendizaje
 
 Blog de contenido con backend en **Node.js + Express**, plantillas **EJS** y base de datos **SQLite** (a través del módulo nativo `node:sqlite`). Incluye un panel de administración protegido por login para crear, editar y borrar artículos (CRUD completo), categorías, buscador y SEO básico.
 

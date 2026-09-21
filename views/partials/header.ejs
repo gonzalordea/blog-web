@@ -3,7 +3,7 @@
   // Cada vista puede pasar sus propios metaTitulo/metaDescripcion/etc. al
   // incluir este partial. Si no los pasa, se usan estos valores por defecto
   // (los de la portada).
-  const _titulo = typeof metaTitulo !== "undefined" ? metaTitulo : "Blog Dev — Notas y recursos de desarrollo web";
+  const _titulo = typeof metaTitulo !== "undefined" ? metaTitulo : "Código al Día — Notas y recursos de desarrollo web";
   const _descripcion = typeof metaDescripcion !== "undefined" ? metaDescripcion : "Artículos, cursos, herramientas y recursos para quien está aprendiendo desarrollo web.";
   const _canonica = urlBase + (typeof metaCanonica !== "undefined" ? metaCanonica : "/");
   const _tipoOg = typeof metaTipoOg !== "undefined" ? metaTipoOg : "website";
@@ -29,7 +29,7 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
-  <link rel="alternate" type="application/rss+xml" title="Blog Dev" href="/rss.xml" />
+  <link rel="alternate" type="application/rss+xml" title="Código al Día" href="/rss.xml" />
   <% if (_noIndex) { %>
     <meta name="robots" content="noindex, nofollow" />
   <% } %>
@@ -38,7 +38,7 @@
   <meta property="og:title" content="<%= _titulo %>" />
   <meta property="og:description" content="<%= _descripcion %>" />
   <meta property="og:url" content="<%= _canonica %>" />
-  <meta property="og:site_name" content="Blog Dev" />
+  <meta property="og:site_name" content="Código al Día" />
   <meta property="og:image" content="<%= _imagen %>" />
   <meta name="twitter:card" content="summary_large_image" />
 
@@ -55,7 +55,7 @@
 </head>
 <body>
   <header class="cabecera">
-    <a href="/" class="logo">blog<span class="logo-punto">.</span>dev</a>
+    <a href="/" class="logo">código<span class="logo-punto">al</span>día</a>
     <form action="/" method="GET" class="barra-busqueda" role="search">
       <svg class="icono-busqueda" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
@@ -71,6 +71,7 @@
     </form>
     <nav>
       <a href="/sobre">Sobre</a>
+      <a href="/contacto">Contacto</a>
       <a href="/rss.xml">RSS</a>
       <% if (typeof sesionIniciada !== "undefined" && sesionIniciada) { %>
         <a href="/admin/dashboard">Panel admin</a>
