@@ -64,7 +64,7 @@
           <td class="celda-visitas"><%= post.visitas %></td>
           <td><%= post.fecha_creacion %></td>
           <td class="acciones">
-            <a href="/post/<%= post.id %>" target="_blank">Ver</a>
+            <a href="/post/<%= post.slug %>" target="_blank">Ver</a>
             <a href="/admin/posts/<%= post.id %>/editar">Editar</a>
             <form action="/admin/posts/<%= post.id %>/estado" method="POST" class="form-estado">
               <button type="submit"><%= post.estado === "publicado" ? "Pasar a borrador" : "Publicar" %></button>

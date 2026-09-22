@@ -1,5 +1,9 @@
 <%
   const resumenLimpio = post.resumen.replace(/\s+/g, " ").trim();
+  // Si se ha rellenado una meta descripcion especifica para buscadores, se
+  // usa esa (title/meta description/OG/JSON-LD); si no, se sigue usando el
+  // resumen de siempre, asi que no cambia nada para quien no la rellene.
+  const metaDescripcionFinal = (post.meta_descripcion && post.meta_descripcion.trim()) || resumenLimpio;
   const fechaIso = post.fecha_creacion.replace(" ", "T");
   // fecha_actualizacion es NULL hasta que alguien edita el articulo desde el
   // panel admin, y solo la mostramos si de verdad aporta algo (fecha distinta
@@ -14,12 +18,16 @@
     "@context": "https://schema.org",
     "@type": "Article",
     headline: post.titulo,
-    description: resumenLimpio,
+    description: metaDescripcionFinal,
     datePublished: fechaIso,
     dateModified: fechaActualizacionIso || fechaIso,
-    mainEntityOfPage: urlBase + "/post/" + post.id,
+    mainEntityOfPage: urlBase + "/post/" + post.slug,
     author: { "@type": "Organization", name: "Código al Día" },
-    publisher: { "@type": "Organization", name: "Código al Día" },
+    publisher: {
+      "@type": "Organization",
+      name: "Código al Día",
+      logo: { "@type": "ImageObject", url: urlBase + "/icons/apple-touch-icon.png" },
+    },
   };
   if (post.imagen) {
     jsonLd.image = post.imagen.startsWith("http") ? post.imagen : urlBase + post.imagen;
@@ -40,7 +48,7 @@
     "@type": "ListItem",
     position: migasItems.length + 1,
     name: post.titulo,
-    item: urlBase + "/post/" + post.id,
+    item: urlBase + "/post/" + post.slug,
   });
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -49,9 +57,9 @@
   };
 %>
 <%- include('partials/header', {
-  metaTitulo: post.titulo + " — Código al Día",
-  metaDescripcion: resumenLimpio,
-  metaCanonica: "/post/" + post.id,
+  metaTitulo: post.titulo,
+  metaDescripcion: metaDescripcionFinal,
+  metaCanonica: "/post/" + post.slug,
   metaImagen: post.imagen,
   metaTipoOg: "article",
   conBarraLateral: true
@@ -80,7 +88,7 @@
     <button
       type="button"
       class="boton-compartir"
-      data-url="<%= urlBase %>/post/<%= post.id %>"
+      data-url="<%= urlBase %>/post/<%= post.slug %>"
       onclick="
         navigator.clipboard.writeText(this.dataset.url).then(() => {
           const textoOriginal = this.textContent;
@@ -198,9 +206,9 @@
     <h2>Tambien te puede interesar</h2>
     <div class="relacionados-lista">
       <% relacionados.forEach(function(rel) { %>
-        <a href="/post/<%= rel.id %>" class="relacionado-item">
+        <a href="/post/<%= rel.slug %>" class="relacionado-item">
           <% if (rel.imagen) { %>
-            <img src="<%= rel.imagen %>" alt="" class="relacionado-img" />
+            <img src="<%= rel.imagen %>" alt="" class="relacionado-img" loading="lazy" />
           <% } else { %>
             <div class="relacionado-img fila-post-img-placeholder" aria-hidden="true">
               <span><%= rel.titulo.trim().charAt(0).toUpperCase() %></span>
@@ -236,7 +244,7 @@
   <% if (typeof errorComentario !== "undefined" && errorComentario) { %>
     <p class="mensaje-error"><%= errorComentario %></p>
   <% } %>
-  <form action="/post/<%= post.id %>/comentarios" method="POST" class="formulario formulario-comentario">
+  <form action="/post/<%= post.slug %>/comentarios" method="POST" class="formulario formulario-comentario">
     <label for="nombre">Nombre</label>
     <input type="text" id="nombre" name="nombre" required maxlength="80" />
 
@@ -276,7 +284,7 @@
       <h2>Ultimos articulos</h2>
       <ul class="widget-lista">
         <% ultimosPosts.forEach(function(p) { %>
-          <li><a href="/post/<%= p.id %>"><%= p.titulo %></a></li>
+          <li><a href="/post/<%= p.slug %>"><%= p.titulo %></a></li>
         <% }); %>
       </ul>
     </div>

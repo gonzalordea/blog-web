@@ -11,8 +11,18 @@
     <label for="titulo">Título</label>
     <input type="text" id="titulo" name="titulo" required value="<%= post ? post.titulo : '' %>" />
 
+    <label for="slug">URL del artículo (opcional)</label>
+    <input type="text" id="slug" name="slug" value="<%= post && post.slug ? post.slug : '' %>" placeholder="Se genera automáticamente a partir del título si lo dejas en blanco" />
+    <% if (post && post.slug) { %>
+      <p class="form-imagen-nota">URL actual: /post/<%= post.slug %>. Si la cambias, el enlace anterior deja de funcionar (a diferencia de un enlace antiguo /post/&lt;id&gt;, que sí redirige solo) — cámbiala solo si aún no la has compartido ni indexado.</p>
+    <% } %>
+
     <label for="resumen">Resumen (aparece en la portada)</label>
     <textarea id="resumen" name="resumen" rows="2" required><%= post ? post.resumen : '' %></textarea>
+
+    <label for="meta_descripcion">Meta descripción para buscadores (opcional, 150-160 caracteres recomendado)</label>
+    <textarea id="meta_descripcion" name="meta_descripcion" rows="2" maxlength="300"><%= post && post.meta_descripcion ? post.meta_descripcion : '' %></textarea>
+    <p class="form-imagen-nota">Si la dejas en blanco, se usa el resumen de arriba (que puede ser más largo de lo que Google suele mostrar sin cortar).</p>
 
     <label for="categoria_id">Categoría</label>
     <select id="categoria_id" name="categoria_id">

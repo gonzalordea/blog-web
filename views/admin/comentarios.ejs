@@ -23,7 +23,7 @@
     <tbody>
       <% comentarios.forEach(function(comentario) { %>
         <tr>
-          <td><a href="/post/<%= comentario.post_id %>#comentarios" target="_blank"><%= comentario.post_titulo %></a></td>
+          <td><a href="/post/<%= comentario.post_slug %>#comentarios" target="_blank"><%= comentario.post_titulo %></a></td>
           <td><%= comentario.nombre %></td>
           <td class="celda-comentario"><%= comentario.contenido %></td>
           <td><%= comentario.fecha_creacion %></td>

@@ -28,7 +28,7 @@ router.get("/robots.txt", (req, res) => {
 router.get("/sitemap.xml", (req, res) => {
   const urlBase = `${req.protocol}://${req.get("host")}`;
   const posts = db
-    .prepare("SELECT id, fecha_creacion FROM posts WHERE estado = 'publicado' ORDER BY fecha_creacion DESC")
+    .prepare("SELECT id, slug, fecha_creacion FROM posts WHERE estado = 'publicado' ORDER BY fecha_creacion DESC")
     .all();
   // Solo se listan categorias que tengan al menos un articulo publicado:
   // una pagina de categoria vacia no aporta nada a un rastreador.
@@ -52,7 +52,7 @@ router.get("/sitemap.xml", (req, res) => {
     ),
     ...posts.map((post) => {
       const fecha = post.fecha_creacion.slice(0, 10); // "YYYY-MM-DD"
-      return `<url><loc>${urlBase}/post/${post.id}</loc><lastmod>${fecha}</lastmod><changefreq>monthly</changefreq></url>`;
+      return `<url><loc>${urlBase}/post/${post.slug}</loc><lastmod>${fecha}</lastmod><changefreq>monthly</changefreq></url>`;
     }),
   ];
 
@@ -124,7 +124,7 @@ router.get("/rss.xml", (req, res) => {
   const urlBase = `${req.protocol}://${req.get("host")}`;
   const posts = db
     .prepare(
-      `SELECT id, titulo, resumen, fecha_creacion
+      `SELECT id, slug, titulo, resumen, fecha_creacion
        FROM posts
        WHERE estado = 'publicado'
        ORDER BY fecha_creacion DESC
@@ -134,13 +134,17 @@ router.get("/rss.xml", (req, res) => {
 
   const items = posts
     .map((post) => {
-      const link = `${urlBase}/post/${post.id}`;
+      const link = `${urlBase}/post/${post.slug}`;
       const fechaRfc822 = new Date(post.fecha_creacion.replace(" ", "T")).toUTCString();
+      // El guid no es la URL (isPermaLink="false"): asi, si la URL de un
+      // articulo cambia mas adelante (como al pasar de /post/<id> a
+      // /post/<slug>), los lectores de RSS no lo marcan como articulo nuevo
+      // solo porque cambio el enlace.
       return [
         "<item>",
         `<title>${escaparXml(post.titulo)}</title>`,
         `<link>${link}</link>`,
-        `<guid isPermaLink="true">${link}</guid>`,
+        `<guid isPermaLink="false">codigoaldia-post-${post.id}</guid>`,
         `<pubDate>${fechaRfc822}</pubDate>`,
         `<description>${escaparXml(post.resumen)}</description>`,
         "</item>",

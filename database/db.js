@@ -136,6 +136,61 @@ if (!tieneDestacado) {
 }
 
 // ---------------------------------------------------------------------
+// Migración: añadir las columnas slug y meta_descripcion a "posts"
+// ---------------------------------------------------------------------
+// "slug" es la version amigable del titulo para la URL del articulo
+// (/post/mi-articulo en vez de /post/7), la misma idea que ya existe para
+// categorias. Se genera automaticamente a partir del titulo si se deja en
+// blanco al crear o editar un articulo desde el panel. "meta_descripcion"
+// es opcional: si se rellena, se usa en el <title>/<meta description> que
+// ve Google en vez del resumen (que sigue siendo el texto que ve el lector
+// en la portada); si se deja vacia, se sigue usando el resumen como hasta
+// ahora, asi que no cambia nada para los articulos que no la usen.
+
+const tieneSlugPost = columnasPosts.some((columna) => columna.name === "slug");
+if (!tieneSlugPost) {
+  db.exec("ALTER TABLE posts ADD COLUMN slug TEXT");
+  console.log("Migración aplicada: columna slug añadida a posts");
+}
+
+const tieneMetaDescripcion = columnasPosts.some((columna) => columna.name === "meta_descripcion");
+if (!tieneMetaDescripcion) {
+  db.exec("ALTER TABLE posts ADD COLUMN meta_descripcion TEXT");
+  console.log("Migración aplicada: columna meta_descripcion añadida a posts");
+}
+
+// Rellena el slug de los articulos que todavia no lo tengan (los que ya
+// existian antes de este cambio), a partir de su titulo, evitando slugs
+// repetidos igual que se hace mas abajo para las categorias.
+const postsSinSlug = db
+  .prepare("SELECT id, titulo FROM posts WHERE slug IS NULL OR slug = ''")
+  .all();
+
+if (postsSinSlug.length > 0) {
+  const actualizarSlugPost = db.prepare("UPDATE posts SET slug = ? WHERE id = ?");
+  const slugsDePostsExistentes = new Set(
+    db
+      .prepare("SELECT slug FROM posts WHERE slug IS NOT NULL AND slug != ''")
+      .all()
+      .map((post) => post.slug)
+  );
+
+  postsSinSlug.forEach((post) => {
+    const base = slugify(post.titulo) || "articulo";
+    let slugFinal = base;
+    let contador = 2;
+    while (slugsDePostsExistentes.has(slugFinal)) {
+      slugFinal = `${base}-${contador}`;
+      contador += 1;
+    }
+    slugsDePostsExistentes.add(slugFinal);
+    actualizarSlugPost.run(slugFinal, post.id);
+  });
+
+  console.log(`Slugs generados para ${postsSinSlug.length} artículo(s) existente(s)`);
+}
+
+// ---------------------------------------------------------------------
 // Migración: añadir la columna slug a "categorias" si todavía no existe
 // ---------------------------------------------------------------------
 // El slug es la version "amigable" del nombre de la categoria para usar en

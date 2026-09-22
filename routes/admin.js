@@ -91,6 +91,29 @@ function esColorHexValido(color) {
   return typeof color === "string" && /^#[0-9a-fA-F]{6}$/.test(color);
 }
 
+// Genera un slug unico para un articulo a partir de un texto (el slug que
+// haya escrito quien lo edita, o si esta vacio, el propio titulo). Si ya
+// existe otro articulo con ese slug, añade -2, -3... igual que se hace con
+// las categorias. "idExcluir" evita que un articulo choque consigo mismo al
+// editarlo sin cambiar su slug.
+function generarSlugUnicoDePost(texto, idExcluir) {
+  const base = slugify(texto) || "articulo";
+  const slugsExistentes = new Set(
+    db
+      .prepare("SELECT slug FROM posts WHERE slug IS NOT NULL AND slug != '' AND id != ?")
+      .all(idExcluir || 0)
+      .map((post) => post.slug)
+  );
+
+  let slugFinal = base;
+  let contador = 2;
+  while (slugsExistentes.has(slugFinal)) {
+    slugFinal = `${base}-${contador}`;
+    contador += 1;
+  }
+  return slugFinal;
+}
+
 // ---------------------------------------------------------------------
 // LOGIN
 // ---------------------------------------------------------------------
@@ -158,15 +181,17 @@ router.get("/posts/nuevo", requiereLogin, (req, res) => {
 });
 
 router.post("/posts/nuevo", requiereLogin, subirImagenConError, (req, res) => {
-  const { titulo, resumen, contenido, categoria_id, estado } = req.body;
+  const { titulo, resumen, contenido, categoria_id, estado, slug, meta_descripcion } = req.body;
   const imagen = req.file ? `/uploads/${req.file.filename}` : null;
   // Si no se manda un valor reconocido, se crea como borrador por defecto
   // (más seguro: así un artículo nunca se publica solo por un despiste).
   const estadoFinal = estado === "publicado" ? "publicado" : "borrador";
+  const slugFinal = generarSlugUnicoDePost(slug || titulo, null);
+  const metaDescripcionFinal = (meta_descripcion || "").trim() || null;
 
   db.prepare(
-    "INSERT INTO posts (titulo, resumen, contenido, imagen, categoria_id, estado) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal);
+    "INSERT INTO posts (titulo, resumen, contenido, imagen, categoria_id, estado, slug, meta_descripcion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal, slugFinal, metaDescripcionFinal);
 
   res.redirect("/admin/dashboard");
 });
@@ -186,21 +211,23 @@ router.get("/posts/:id/editar", requiereLogin, (req, res) => {
 });
 
 router.post("/posts/:id/editar", requiereLogin, subirImagenConError, (req, res) => {
-  const { titulo, resumen, contenido, categoria_id, estado } = req.body;
+  const { titulo, resumen, contenido, categoria_id, estado, slug, meta_descripcion } = req.body;
   const postActual = db.prepare("SELECT imagen, estado FROM posts WHERE id = ?").get(req.params.id);
 
   // Si se sube un archivo nuevo, reemplaza la imagen (y borra la anterior).
   // Si no, se conserva la que ya tenía el artículo.
   const imagen = req.file ? `/uploads/${req.file.filename}` : postActual?.imagen || null;
   const estadoFinal = estado === "publicado" ? "publicado" : "borrador";
+  const slugFinal = generarSlugUnicoDePost(slug || titulo, req.params.id);
+  const metaDescripcionFinal = (meta_descripcion || "").trim() || null;
 
   if (req.file && postActual?.imagen) {
     borrarImagenAnterior(req, postActual.imagen);
   }
 
   db.prepare(
-    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ?, estado = ?, fecha_actualizacion = datetime('now', 'localtime') WHERE id = ?"
-  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal, req.params.id);
+    "UPDATE posts SET titulo = ?, resumen = ?, contenido = ?, imagen = ?, categoria_id = ?, estado = ?, slug = ?, meta_descripcion = ?, fecha_actualizacion = datetime('now', 'localtime') WHERE id = ?"
+  ).run(titulo, resumen, contenido, imagen, categoria_id || null, estadoFinal, slugFinal, metaDescripcionFinal, req.params.id);
 
   res.redirect("/admin/dashboard");
 });
@@ -316,7 +343,7 @@ router.post("/categorias/:id/borrar", requiereLogin, (req, res) => {
 router.get("/comentarios", requiereLogin, (req, res) => {
   const comentarios = db
     .prepare(
-      `SELECT comentarios.*, posts.titulo AS post_titulo
+      `SELECT comentarios.*, posts.titulo AS post_titulo, posts.slug AS post_slug
        FROM comentarios
        JOIN posts ON comentarios.post_id = posts.id
        ORDER BY comentarios.fecha_creacion DESC`

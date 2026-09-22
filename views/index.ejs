@@ -17,6 +17,20 @@
   conBarraLateral: true
 }) %>
 
+<% if (!hayCategoria && !(typeof busqueda !== "undefined" && busqueda) && paginaActual === 1) { %>
+  <script type="application/ld+json"><%- JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Código al Día",
+    url: urlBase,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: urlBase + "/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }) %></script>
+<% } %>
+
 <div class="col-principal">
 
 <section class="hero">
@@ -30,7 +44,7 @@
 </section>
 
 <% if (typeof destacado !== "undefined" && destacado) { %>
-  <a href="/post/<%= destacado.id %>" class="destacado-post">
+  <a href="/post/<%= destacado.slug %>" class="destacado-post">
     <% if (destacado.imagen) { %>
       <img src="<%= destacado.imagen %>" alt="<%= destacado.titulo %>" class="destacado-post-img" />
     <% } else { %>
@@ -87,9 +101,9 @@
 
   <% posts.forEach(function(post) { %>
     <article class="fila-post">
-      <a href="/post/<%= post.id %>" class="fila-post-img-envoltorio">
+      <a href="/post/<%= post.slug %>" class="fila-post-img-envoltorio">
         <% if (post.imagen) { %>
-          <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="fila-post-img" />
+          <img src="<%= post.imagen %>" alt="<%= post.titulo %>" class="fila-post-img" loading="lazy" />
         <% } else { %>
           <div class="fila-post-img fila-post-img-placeholder" aria-hidden="true">
             <span><%= post.titulo.trim().charAt(0).toUpperCase() %></span>
@@ -100,9 +114,9 @@
         <p class="fila-post-meta" style="<%= post.categoria_color ? `color: ${post.categoria_color};` : '' %>">
           <% if (post.categoria_nombre) { %><%= post.categoria_nombre %><% } else { %>Sin categoría<% } %>
         </p>
-        <h2><a href="/post/<%= post.id %>"><%= post.titulo %></a></h2>
+        <h2><a href="/post/<%= post.slug %>"><%= post.titulo %></a></h2>
         <p class="fila-post-resumen"><%= post.resumen %></p>
-        <a href="/post/<%= post.id %>" class="leer-mas">Leer artículo</a>
+        <a href="/post/<%= post.slug %>" class="leer-mas">Leer artículo</a>
       </div>
     </article>
   <% }); %>

@@ -22,7 +22,7 @@ function obtenerRelacionados(categoriaId, idActual) {
 
   return db
     .prepare(
-      `SELECT id, titulo, resumen, imagen
+      `SELECT id, slug, titulo, resumen, imagen
        FROM posts
        WHERE categoria_id = ? AND estado = 'publicado' AND id != ?
        ORDER BY fecha_creacion DESC
@@ -37,7 +37,7 @@ function obtenerDatosBarraLateral(idActual) {
   const categorias = db.prepare("SELECT * FROM categorias ORDER BY nombre").all();
   const ultimosPosts = db
     .prepare(
-      `SELECT id, titulo FROM posts
+      `SELECT id, slug, titulo FROM posts
        WHERE estado = 'publicado' AND id != ?
        ORDER BY fecha_creacion DESC
        LIMIT 5`
@@ -241,19 +241,44 @@ router.get("/cookies", (req, res) => {
   res.render("cookies");
 });
 
-// GET /post/:id -> Página de detalle de un artículo concreto
-router.get("/post/:id", (req, res) => {
-  const post = db
-    .prepare(
-      `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
-       FROM posts
-       LEFT JOIN categorias ON posts.categoria_id = categorias.id
-       WHERE posts.id = ? AND posts.estado = 'publicado'`
-    )
-    .get(req.params.id);
+// Busca un articulo publicado por su slug o, si no coincide con ninguno y el
+// parametro es numerico, por su id (compatibilidad con enlaces antiguos del
+// esquema /post/<id>, de antes de que los articulos tuvieran slug, o ya
+// compartidos/indexados con esa URL). "redirigidoDesdeId" le dice a la ruta
+// si hace falta un 301 antes de renderizar nada.
+function buscarPostPorSlugOId(parametro) {
+  const camposPost = `posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
+     FROM posts
+     LEFT JOIN categorias ON posts.categoria_id = categorias.id`;
+
+  const postPorSlug = db
+    .prepare(`SELECT ${camposPost} WHERE posts.slug = ? AND posts.estado = 'publicado'`)
+    .get(parametro);
+  if (postPorSlug) return { post: postPorSlug, redirigidoDesdeId: false };
+
+  if (/^\d+$/.test(parametro)) {
+    const postPorId = db
+      .prepare(`SELECT ${camposPost} WHERE posts.id = ? AND posts.estado = 'publicado'`)
+      .get(parametro);
+    if (postPorId) return { post: postPorId, redirigidoDesdeId: true };
+  }
+
+  return { post: null, redirigidoDesdeId: false };
+}
+
+// GET /post/:slugOrId -> Página de detalle de un artículo concreto
+router.get("/post/:slugOrId", (req, res) => {
+  const { post, redirigidoDesdeId } = buscarPostPorSlugOId(req.params.slugOrId);
 
   if (!post) {
     return res.status(404).render("404");
+  }
+
+  // Enlace antiguo por id: redirige de forma permanente a la URL con slug,
+  // sin renderizar la pagina ni sumar una visita aqui (se suma cuando el
+  // navegador siga la redireccion y cargue la URL definitiva).
+  if (redirigidoDesdeId) {
+    return res.redirect(301, `/post/${post.slug}`);
   }
 
   // Contador de visitas: se suma 1 en cada carga de la pagina publica.
@@ -275,10 +300,10 @@ router.get("/post/:id", (req, res) => {
   });
 });
 
-// POST /post/:id/comentarios -> Añadir un comentario a un artículo. Público,
-// no requiere haber iniciado sesión (cualquier lector puede comentar).
-router.post("/post/:id/comentarios", (req, res) => {
-  const post = db.prepare("SELECT id FROM posts WHERE id = ? AND estado = 'publicado'").get(req.params.id);
+// POST /post/:slugOrId/comentarios -> Añadir un comentario a un artículo.
+// Público, no requiere haber iniciado sesión (cualquier lector puede comentar).
+router.post("/post/:slugOrId/comentarios", (req, res) => {
+  const { post } = buscarPostPorSlugOId(req.params.slugOrId);
   if (!post) {
     return res.status(404).render("404");
   }
@@ -287,25 +312,17 @@ router.post("/post/:id/comentarios", (req, res) => {
   const contenido = (req.body.contenido || "").trim().slice(0, 2000);
 
   if (!nombre || !contenido) {
-    const postCompleto = db
-      .prepare(
-        `SELECT posts.*, categorias.nombre AS categoria_nombre, categorias.slug AS categoria_slug, categorias.color AS categoria_color
-         FROM posts
-         LEFT JOIN categorias ON posts.categoria_id = categorias.id
-         WHERE posts.id = ?`
-      )
-      .get(post.id);
     const comentarios = db
       .prepare("SELECT * FROM comentarios WHERE post_id = ? ORDER BY fecha_creacion ASC")
       .all(post.id);
 
     return res.status(400).render("post", {
-      post: postCompleto,
+      post,
       comentarios,
       errorComentario: "Escribe tu nombre y un comentario antes de enviar",
-      tiempoLectura: calcularTiempoLectura(postCompleto.contenido),
-      relacionados: obtenerRelacionados(postCompleto.categoria_id, postCompleto.id),
-      ...obtenerDatosBarraLateral(postCompleto.id),
+      tiempoLectura: calcularTiempoLectura(post.contenido),
+      relacionados: obtenerRelacionados(post.categoria_id, post.id),
+      ...obtenerDatosBarraLateral(post.id),
     });
   }
 
@@ -315,7 +332,7 @@ router.post("/post/:id/comentarios", (req, res) => {
     contenido
   );
 
-  res.redirect(`/post/${post.id}#comentarios`);
+  res.redirect(`/post/${post.slug}#comentarios`);
 });
 
 module.exports = router;
