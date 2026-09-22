@@ -74,6 +74,7 @@
       />
     </form>
     <nav>
+      <a href="/json">Herramientas<span class="pastilla-nueva">Nuevo</span></a>
       <a href="/sobre">Sobre</a>
       <a href="/contacto">Contacto</a>
       <a href="/rss.xml">RSS</a>
@@ -85,4 +86,4 @@
       <% } %>
     </nav>
   </header>
-  <main class="contenedor<%= (typeof conBarraLateral !== "undefined" && conBarraLateral) ? " contenedor--con-barra" : "" %>">
+  <main class="contenedor<%= (typeof conBarraLateral !== "undefined" && conBarraLateral) ? " contenedor--con-barra" : "" %><%= (typeof anchoAmplio !== "undefined" && anchoAmplio) ? " contenedor--ancho" : "" %>">

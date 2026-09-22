@@ -1,0 +1,173 @@
+<%
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: urlBase + "/" },
+      { "@type": "ListItem", position: 2, name: "Formateador JSON", item: urlBase + "/json" },
+    ],
+  };
+%>
+<%- include('../partials/header', {
+  metaTitulo: "Formateador y validador JSON online, gratis — Código al Día",
+  metaDescripcion: "Formatea, valida y minifica JSON directamente en tu navegador. Nada se sube a ningún servidor: gratis, sin límites y sin registro.",
+  metaCanonica: "/json",
+  anchoAmplio: true
+}) %>
+
+<script type="application/ld+json"><%- JSON.stringify(breadcrumbJsonLd) %></script>
+
+<article class="pagina-herramienta">
+  <nav class="migas" aria-label="Miga de pan">
+    <a href="/">Inicio</a>
+    <span class="migas-sep">/</span>
+    <span class="migas-actual">Formateador JSON</span>
+  </nav>
+
+  <div class="cabecera-herramienta">
+    <h1>Formateador y validador JSON online</h1>
+    <p class="intro">Pega tu JSON, formatéalo con la indentación que quieras y comprueba al momento si tiene algún error de sintaxis. <strong>Todo se procesa en tu navegador</strong> — nada se envía a ningún servidor.</p>
+  </div>
+
+  <div class="aviso-privacidad">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 2L4 5V11C4 16.5 7.5 21.2 12 22C16.5 21.2 20 16.5 20 11V5L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span><strong>Privacidad primero:</strong> esta herramienta funciona 100% en tu navegador (JavaScript del lado del cliente). Tu JSON nunca sale de tu ordenador ni pasa por nuestro servidor.</span>
+  </div>
+
+  <div class="panel-herramienta">
+    <div class="barra-herramientas">
+      <button type="button" class="boton boton--principal" id="btn-formatear">Formatear</button>
+      <button type="button" class="boton" id="btn-minificar">Minificar</button>
+      <select class="selector-indent" id="select-indent" aria-label="Espacios de indentación">
+        <option value="2">2 espacios</option>
+        <option value="4">4 espacios</option>
+        <option value="tab">Tabulación</option>
+      </select>
+      <button type="button" class="boton" id="btn-copiar">Copiar</button>
+      <button type="button" class="boton" id="btn-limpiar">Limpiar</button>
+      <button type="button" class="boton" id="btn-ejemplo">Cargar ejemplo</button>
+      <div class="espaciador"></div>
+      <span class="estado estado--neutro" id="estado-json">Pega tu JSON abajo</span>
+    </div>
+    <div class="zona-editor">
+      <textarea id="entrada-json" spellcheck="false" placeholder='{"nombre": "Código al Día", "activo": true, "articulos": 6}'></textarea>
+    </div>
+    <p class="mensaje-error-json" id="mensaje-error" hidden></p>
+  </div>
+
+  <div class="bloque-apoyo">
+    <h2>¿Qué hace esta herramienta?</h2>
+    <p>Coge un JSON desordenado o minificado (el típico bloque ilegible que copias de una respuesta de API o de un archivo de configuración) y lo reordena con sangría legible, o al revés: lo comprime en una sola línea si lo que necesitas es minificarlo antes de guardarlo. Si el JSON tiene algún error de sintaxis — una coma de más, unas comillas sin cerrar — te lo señala al momento, sin que tengas que buscarlo a ojo.</p>
+  </div>
+
+  <div class="bloque-apoyo">
+    <h2>Preguntas frecuentes</h2>
+    <dl class="faq">
+      <dt>¿Necesito instalar algo?</dt>
+      <dd>No, funciona directamente en el navegador, en el móvil o el ordenador, sin registro ni instalación.</dd>
+      <dt>¿Hay límite de tamaño?</dt>
+      <dd>No hay un límite fijado por la herramienta — al procesarse todo en tu navegador, el único límite real es la memoria de tu dispositivo.</dd>
+      <dt>¿Por qué me da error si el JSON "parece" correcto?</dt>
+      <dd>Los errores más comunes son comas finales antes de una llave o corchete de cierre, comillas simples en vez de dobles, o claves sin comillas — JSON es más estricto que un objeto de JavaScript.</dd>
+    </dl>
+  </div>
+
+  <div class="bloque-apoyo">
+    <h2>Relacionado</h2>
+    <p>Si trabajas con JSON normalmente es porque estás consumiendo una API o leyendo un archivo de configuración — en ese caso te puede interesar <a href="/post/variables-de-entorno-y-env-que-son-y-por-que-tu-api-key-no-deberia-estar-nunca-en-el-codigo">cómo proteger tus claves con variables de entorno</a> antes de subir tu proyecto a ningún sitio.</p>
+  </div>
+</article>
+
+<script>
+  (function () {
+    const entrada = document.getElementById('entrada-json');
+    const estado = document.getElementById('estado-json');
+    const mensajeError = document.getElementById('mensaje-error');
+    const selectIndent = document.getElementById('select-indent');
+    const btnCopiar = document.getElementById('btn-copiar');
+
+    function indentActual() {
+      const v = selectIndent.value;
+      return v === 'tab' ? '\t' : Number(v);
+    }
+
+    function marcarError(msg) {
+      estado.textContent = 'JSON con errores';
+      estado.className = 'estado estado--error';
+      mensajeError.textContent = msg;
+      mensajeError.hidden = false;
+    }
+
+    function marcarOk(msg) {
+      estado.textContent = msg;
+      estado.className = 'estado estado--ok';
+      mensajeError.hidden = true;
+    }
+
+    function marcarNeutro() {
+      estado.textContent = 'Pega tu JSON abajo';
+      estado.className = 'estado estado--neutro';
+      mensajeError.hidden = true;
+    }
+
+    document.getElementById('btn-formatear').addEventListener('click', function () {
+      const texto = entrada.value.trim();
+      if (!texto) { marcarNeutro(); return; }
+      try {
+        const obj = JSON.parse(texto);
+        entrada.value = JSON.stringify(obj, null, indentActual());
+        marcarOk('JSON válido y formateado');
+      } catch (e) {
+        marcarError(e.message);
+      }
+    });
+
+    document.getElementById('btn-minificar').addEventListener('click', function () {
+      const texto = entrada.value.trim();
+      if (!texto) { marcarNeutro(); return; }
+      try {
+        const obj = JSON.parse(texto);
+        entrada.value = JSON.stringify(obj);
+        marcarOk('JSON válido y minificado');
+      } catch (e) {
+        marcarError(e.message);
+      }
+    });
+
+    btnCopiar.addEventListener('click', async function () {
+      if (!entrada.value) return;
+      try {
+        await navigator.clipboard.writeText(entrada.value);
+        const original = btnCopiar.textContent;
+        btnCopiar.textContent = 'Copiado ✓';
+        setTimeout(function () { btnCopiar.textContent = original; }, 1200);
+      } catch (e) {
+        // Silencioso: algunos navegadores bloquean el portapapeles fuera de
+        // un contexto seguro (http sin TLS) o sin gesto directo del usuario.
+      }
+    });
+
+    document.getElementById('btn-limpiar').addEventListener('click', function () {
+      entrada.value = '';
+      marcarNeutro();
+      entrada.focus();
+    });
+
+    document.getElementById('btn-ejemplo').addEventListener('click', function () {
+      entrada.value = '{"blog":"Código al Día","categorias":["Herramientas","Recursos","Cursos","Opinión"],"articulos_publicados":6,"stack":{"backend":"Express","db":"SQLite"},"activo":true}';
+      marcarNeutro();
+    });
+
+    entrada.addEventListener('input', function () {
+      if (!entrada.value.trim()) { marcarNeutro(); return; }
+      try {
+        JSON.parse(entrada.value);
+        marcarOk('JSON válido');
+      } catch (e) {
+        marcarError(e.message);
+      }
+    });
+  })();
+</script>
+
+<%- include('../partials/footer') %>

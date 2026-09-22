@@ -19,6 +19,7 @@ require("./database/db");
 const postsRoutes = require("./routes/posts");
 const adminRoutes = require("./routes/admin");
 const seoRoutes = require("./routes/seo");
+const herramientasRoutes = require("./routes/herramientas");
 
 const app = express();
 const PUERTO = process.env.PORT || 3000;
@@ -119,6 +120,7 @@ app.use((req, res, next) => {
 // Rutas
 // ---------------------------------------------------------------------
 app.use("/", seoRoutes);
+app.use("/", herramientasRoutes);
 app.use("/", postsRoutes);
 app.use("/admin", adminRoutes);
 

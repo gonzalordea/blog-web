@@ -47,6 +47,7 @@ router.get("/sitemap.xml", (req, res) => {
     `<url><loc>${urlBase}/contacto</loc><changefreq>yearly</changefreq></url>`,
     `<url><loc>${urlBase}/privacidad</loc><changefreq>yearly</changefreq></url>`,
     `<url><loc>${urlBase}/cookies</loc><changefreq>yearly</changefreq></url>`,
+    `<url><loc>${urlBase}/json</loc><changefreq>monthly</changefreq></url>`,
     ...categorias.map(
       (categoria) => `<url><loc>${urlBase}/categoria/${categoria.slug}</loc><changefreq>weekly</changefreq></url>`
     ),
