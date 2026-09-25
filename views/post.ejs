@@ -14,6 +14,15 @@
     : null;
   const mostrarFechaActualizacion =
     fechaActualizacionIso && post.fecha_actualizacion.slice(0, 10) !== post.fecha_creacion.slice(0, 10);
+  // Autor del blog. De momento hay un unico autor, asi que se define aqui
+  // en vez de en una tabla nueva en base de datos (no hace falta mas
+  // complejidad para un solo autor) - se usa tanto en el JSON-LD como en la
+  // caja de autor visible al final del articulo.
+  const autor = {
+    nombre: "Gonzalo Rodríguez de Austria",
+    bio: "En formación como desarrollador web (DAW). Código al Día es donde documento y explico lo que voy entendiendo, con fuentes y sin dar nada por sabido.",
+  };
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -22,7 +31,7 @@
     datePublished: fechaIso,
     dateModified: fechaActualizacionIso || fechaIso,
     mainEntityOfPage: urlBase + "/post/" + post.slug,
-    author: { "@type": "Organization", name: "Código al Día" },
+    author: { "@type": "Person", name: autor.nombre, url: urlBase + "/sobre" },
     publisher: {
       "@type": "Organization",
       name: "Código al Día",
@@ -106,7 +115,7 @@
   <% } %>
   <h1><%= post.titulo %></h1>
   <p class="fecha">
-    Publicado el <%= post.fecha_creacion %>
+    Por <%= autor.nombre %> &middot; Publicado el <%= post.fecha_creacion %>
     <% if (mostrarFechaActualizacion) { %>
       <span class="fecha-actualizado">&middot; Actualizado el <%= post.fecha_actualizacion %></span>
     <% } %>
@@ -125,6 +134,14 @@
   <div class="post-detalle-contenido">
     <%- post.contenido %>
   </div>
+
+  <aside class="caja-autor">
+    <div class="caja-autor-inicial" aria-hidden="true"><%= autor.nombre.charAt(0) %></div>
+    <div>
+      <p class="caja-autor-nombre">Escrito por <%= autor.nombre %></p>
+      <p class="caja-autor-bio"><%= autor.bio %></p>
+    </div>
+  </aside>
 </article>
 
 <script>

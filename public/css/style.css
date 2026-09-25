@@ -1299,6 +1299,44 @@ body.modo-lectura .post-detalle-contenido {
   color: var(--tinta);
 }
 
+.caja-autor {
+  display: flex;
+  gap: 0.9rem;
+  align-items: flex-start;
+  padding: 1.1rem 1.2rem;
+  margin: 2.2rem 0 0;
+  background: var(--bg-elevada);
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+}
+
+.caja-autor-inicial {
+  flex-shrink: 0;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  background: var(--acento);
+  color: #fff;
+  font-family: var(--fuente-titular);
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caja-autor-nombre {
+  margin: 0 0 0.25rem;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.caja-autor-bio {
+  margin: 0;
+  color: var(--tinta-tenue);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
 .aviso-privacidad {
   display: flex;
   gap: 0.7rem;
