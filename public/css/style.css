@@ -19,8 +19,12 @@
    Se reutiliza la misma paleta (mismos acentos, algo mas claros para
    mantener contraste), asi que el sitio se sigue sintiendo igual, solo que
    invertido. */
+/* Modo oscuro manual: el boton de la cabecera guarda la preferencia en
+   localStorage y la aplica como atributo data-theme en <html>. Mientras no
+   haya una eleccion manual (sin atributo, o "auto"), se sigue respetando la
+   preferencia del sistema operativo mediante prefers-color-scheme. */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #10151d;
     --bg-elevada: #1a212c;
     --tinta: #eef1f6;
@@ -30,20 +34,45 @@
     --acento-calido: #e2984a;
   }
 
-  .mensaje-error {
+  :root:not([data-theme="light"]) .mensaje-error {
     background: rgba(185, 28, 28, 0.18);
     color: #ff8080;
   }
 
-  .etiqueta-estado--publicado {
+  :root:not([data-theme="light"]) .etiqueta-estado--publicado {
     color: #4ade80;
     border-color: #4ade80;
     background: rgba(74, 222, 128, 0.12);
   }
 
-  .form-borrar button {
+  :root:not([data-theme="light"]) .form-borrar button {
     color: #ff8080;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #10151d;
+  --bg-elevada: #1a212c;
+  --tinta: #eef1f6;
+  --tinta-tenue: #9aa7b8;
+  --borde: #2b3542;
+  --acento: #6c93ff;
+  --acento-calido: #e2984a;
+}
+
+:root[data-theme="dark"] .mensaje-error {
+  background: rgba(185, 28, 28, 0.18);
+  color: #ff8080;
+}
+
+:root[data-theme="dark"] .etiqueta-estado--publicado {
+  color: #4ade80;
+  border-color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+:root[data-theme="dark"] .form-borrar button {
+  color: #ff8080;
 }
 
 * {
@@ -189,6 +218,57 @@ body {
 .cabecera nav a:hover {
   color: var(--tinta);
   border-bottom-color: var(--acento);
+}
+
+/* Boton de modo claro/oscuro: icono de sol o luna segun el tema activo.
+   Los dos SVG conviven en el DOM y CSS decide cual se ve segun el atributo
+   data-theme del <html> (logica de alternancia en un script al final de
+   este partial). */
+.boton-tema {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  margin-left: 1.1rem;
+  padding: 0;
+  background: none;
+  border: 1px solid var(--borde);
+  border-radius: 999px;
+  color: var(--tinta-tenue);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.boton-tema:hover {
+  color: var(--tinta);
+  border-color: var(--acento);
+}
+
+.boton-tema .icono-luna {
+  display: none;
+}
+
+:root[data-theme="dark"] .boton-tema .icono-sol {
+  display: none;
+}
+
+:root[data-theme="dark"] .boton-tema .icono-luna {
+  display: block;
+}
+
+/* Sin eleccion manual guardada, el icono tambien sigue la preferencia del
+   sistema (misma logica que los colores): en modo oscuro del sistema se ve
+   la luna salvo que el visitante haya fijado el tema claro a mano. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .boton-tema .icono-sol {
+    display: none;
+  }
+
+  :root:not([data-theme="light"]) .boton-tema .icono-luna {
+    display: block;
+  }
 }
 
 /* Barra de búsqueda */
@@ -1513,20 +1593,35 @@ body.modo-lectura .post-detalle-contenido {
 }
 
 @media (prefers-color-scheme: dark) {
-  .estado--ok {
+  :root:not([data-theme="light"]) .estado--ok {
     color: #4ade80;
     background: rgba(74, 222, 128, 0.12);
   }
 
-  .estado--error {
+  :root:not([data-theme="light"]) .estado--error {
     color: #ff8080;
     background: rgba(185, 28, 28, 0.18);
   }
 
-  .mensaje-error-json {
+  :root:not([data-theme="light"]) .mensaje-error-json {
     background: rgba(185, 28, 28, 0.18);
     color: #ff8080;
   }
+}
+
+:root[data-theme="dark"] .estado--ok {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+}
+
+:root[data-theme="dark"] .estado--error {
+  color: #ff8080;
+  background: rgba(185, 28, 28, 0.18);
+}
+
+:root[data-theme="dark"] .mensaje-error-json {
+  background: rgba(185, 28, 28, 0.18);
+  color: #ff8080;
 }
 
 @media (max-width: 640px) {
